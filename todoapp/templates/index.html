@@ -1,0 +1,58 @@
+<html>
+  <head>
+    <title>ToDo App</title>
+    <style>
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <form id="form" >
+      <div>
+        <label for="name">Create a To-Do Item</label>
+        <input type="text" id="description" name="description" />
+      </div>
+      <input type="submit" id="submit" value="create" />
+    </form>
+    <div id="error" class="hidden"">Something went wrong!</div>
+    <ul id="todos">
+      {% for item in data %}
+      <li>{{ item.description}}</li>
+      {% endfor %}
+    </ul>
+
+
+    <script type="text/javascript">
+      document.getElementById("form").onsubmit = function(e) {
+        e.preventDefault();
+        document.getElementById('error').className = 'hidden';
+
+        fetch('/todos', {
+          method: 'POST',
+          body: JSON.stringify({
+            'description': document.getElementById('description').value
+          }),
+          headers: {
+            'Content-Type': 'application/json '
+          }
+        })
+        .then(function(response) {
+          return response.json();
+        })
+        .then(function(jsonResponse) {
+          console.log(jsonResponse);
+          let liItem = document.createElement('LI');
+          liItem.innerHTML =jsonResponse['description'];
+          list = document.getElementById('todos').appendChild(liItem);
+        })
+        .catch(function(error) {
+          console.log('error happened', error);
+          document.getElementById('error').className = '';
+          document.getElementById('error').innerHTML = error;
+        })
+      }
+    </script>
+  </body>
+</html>
