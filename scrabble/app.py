@@ -1,21 +1,30 @@
 from flask import Flask, render_template, request, jsonify, abort
 from flask_sqlalchemy import SQLAlchemy
 import sys
+import requests
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///todoapp'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///scrabble'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
 
-class Todo(db.Model):
-  __tablename__ = 'todos'
+class Letters(db.Model):
+  __tablename__ = 'letters'
   id = db.Column(db.Integer, primary_key=True)
-  description = db.Column(db.String, nullable=False)
+  letters = db.Column(db.String, nullable=False)
 
   def __repr__(self):
-    return f'Todo: id:{self.id}, d:{self.description}'
+    return f'Letters: id:{self.id}, data:{self.letters}'
+
+class Word(db.Model):
+  __tablename__ = 'words'
+  id = db.Column(db.Integer, primary_key=True)
+  word = db.Column(db.String, nullable=False)
+
+  def __repr__(self):
+    return f'Word: id:{self.id}, data:{self.word}'
 
 
 db.create_all()
@@ -25,7 +34,8 @@ db.create_all()
 def index():
   return render_template('index.html', data=Todo.query.all())
 
-@app.route('/todos', methods=['POST'])
+@app.route('/words', methods=['POST'])
+# https://wordfinder.yourdictionary.com/unscramble/erteart
 def create_todo():
   error = False
   body = {}
