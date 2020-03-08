@@ -9,6 +9,19 @@
         list-style: none;
         margin:0;
         padding:0;
+        width:200px;
+      }
+      li {
+        clear: both;
+      }
+      li button {
+        -webkit-appearance: none;
+        border: none;
+        outline: none;
+        color:red;
+        float: right;
+        cursor: pointer;
+        font-size:20px;
       }
     </style>
   </head>
@@ -26,40 +39,70 @@
       {% for item in data %}
       <li>
         <input class="check-completed" data-todo-id="{{item.id}}" type="checkbox" {% if item.completed %}checked=checked {% endif %} />
-        {{ item.description}}</li>
+        {{ item.description}}
+        <button class="delete-item" data-todo-id="{{item.id}}" >&cross;</button>
+      </li>
       {% endfor %}
     </ul>
 
 
     <script type="text/javascript">
-      const checkboxes = document.querySelectorAll(".check-completed");
-      for (let i=0; i < checkboxes.length; i++) {
-        checkbox = checkboxes[i];
-        checkbox.onchange = function(e) {
-          // console.log(e);
-          const newCompleted = e.target.checked;
-          const todoId = e.target.dataset.todoId;
-          // console.log(`change on ${todoId}`)
-          fetch(`/todos/${todoId}/set-completed`, {
-            method: 'POST',
-            body: JSON.stringify({
-              'completed': newCompleted
-            }),
-            headers: {
-              'Content-Type': 'application/json '
-            }
-          })
-          .then(function() {
-            document.getElementById('error').className = 'hidden';
-          })
-          .catch(function(error) {
-            console.log('error happened', error);
-            document.getElementById('error').className = '';
-            document.getElementById('error').innerHTML = error;
-          })
+      function set_checkboxes() {
+        const checkboxes = document.querySelectorAll(".check-completed");
+        for (let i=0; i < checkboxes.length; i++) {
+          checkbox = checkboxes[i];
+          checkbox.onchange = function(e) {
+            // console.log(e);
+            const newCompleted = e.target.checked;
+            const todoId = e.target.dataset.todoId;
+            // console.log(`change on ${todoId}`)
+            fetch(`/todos/${todoId}/set-completed`, {
+              method: 'POST',
+              body: JSON.stringify({
+                'completed': newCompleted
+              }),
+              headers: {
+                'Content-Type': 'application/json '
+              }
+            })
+            .then(function() {
+              document.getElementById('error').className = 'hidden';
+            })
+            .catch(function(error) {
+              console.log('error happened', error);
+              document.getElementById('error').className = '';
+              document.getElementById('error').innerHTML = error;
+            })
+          }
         }
       }
 
+      function set_deletes() {
+      const crosses = document.querySelectorAll(".delete-item");
+        for (let i=0; i < crosses.length; i++) {
+          checkbox = crosses[i];
+          checkbox.onclick = function(e) {
+            // console.log(e);
+            const todoId = e.target.dataset.todoId;
+            // console.log(`change on ${todoId}`)
+            fetch(`/todos/${todoId}/delete`, {
+              method: 'GET'
+            })
+            .then(function() {
+              document.getElementById('error').className = 'hidden';
+              location.reload();
+            })
+            .catch(function(error) {
+              console.log('error happened', error);
+              document.getElementById('error').className = '';
+              document.getElementById('error').innerHTML = error;
+            })
+          }
+        }
+      }
+
+      set_checkboxes();
+      set_deletes();
       document.getElementById("form").onsubmit = function(e) {
         e.preventDefault();
         document.getElementById('error').className = 'hidden';
@@ -78,9 +121,34 @@
         })
         .then(function(jsonResponse) {
           console.log(jsonResponse);
+          todo_id = jsonResponse['id'];
+
           let liItem = document.createElement('LI');
-          liItem.innerHTML =jsonResponse['description'];
+
+          let checkbox = document.createElement('input');
+          checkbox.setAttribute("type", "checkbox");
+          checkbox.setAttribute("class", "check-completed");
+          checkbox.setAttribute("data-todo-id", todo_id );
+
+          var label = document.createElement('label');
+          label.appendChild(document.createTextNode(" " + jsonResponse['description']));
+
+          let delButton = document.createElement('button');
+          delButton.setAttribute("data-todo-id", todo_id );
+          delButton.setAttribute("class", "delete-item");
+          delButton.innerHTML = "&cross;";
+          console.log(delButton);
+
+          r = liItem.appendChild(checkbox);
+          console.log(1, r);
+          r = liItem.appendChild(label);
+          console.log(2, r);
+          r = liItem.appendChild(delButton);
+          console.log(3, r);
+
           list = document.getElementById('todos').appendChild(liItem);
+          set_checkboxes();
+          set_deletes();
         })
         .catch(function(error) {
           console.log('error happened', error);
