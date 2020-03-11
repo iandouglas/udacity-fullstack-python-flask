@@ -15,6 +15,7 @@
         clear: both;
       }
       li button {
+        background-color: #fff;
         -webkit-appearance: none;
         border: none;
         outline: none;
@@ -23,28 +24,44 @@
         cursor: pointer;
         font-size:20px;
       }
+      .lists-wrapper, .todos-wrapper {
+        display: inline-block;
+        vertical-align: top;
+      }
     </style>
   </head>
 
   <body>
-    <form id="form" >
-      <div>
-        <label for="name">Create a To-Do Item</label>
-        <input type="text" id="description" name="description" />
-      </div>
-      <input type="submit" id="submit" value="create" />
-    </form>
-    <div id="error" class="hidden"">Something went wrong!</div>
-    <ul id="todos">
-      {% for item in data %}
-      <li>
-        <input class="check-completed" data-todo-id="{{item.id}}" type="checkbox" {% if item.completed %}checked=checked {% endif %} />
-        {{ item.description}}
-        <button class="delete-item" data-todo-id="{{item.id}}" >&cross;</button>
-      </li>
-      {% endfor %}
-    </ul>
+    <div class="lists-wrapper">
+      <ul id="lists">
+        {% for list in lists %}
+        <li>
+          <a href="/lists/{{list.id}}">{{ list.name}}</a>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
 
+    <div class="todos-wrapper">
+      <h4>{{ active_list.name }}</h4>
+      <form id="form" >
+        <div>
+          <label for="name">Create a To-Do Item</label>
+          <input type="text" id="description" name="description" />
+        </div>
+        <input type="submit" id="submit" value="create" />
+      </form>
+      <div id="error" class="hidden"">Something went wrong!</div>
+      <ul id="todos">
+        {% for todo in todos %}
+        <li>
+          <input class="check-completed" data-todo-id="{{todo.id}}" type="checkbox" {% if todo.completed %}checked=checked {% endif %} />
+          {{ todo.description}}
+          <button class="delete-todo" data-todo-id="{{todo.id}}" >&cross;</button>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
 
     <script type="text/javascript">
       function set_checkboxes() {
@@ -78,15 +95,15 @@
       }
 
       function set_deletes() {
-      const crosses = document.querySelectorAll(".delete-item");
+      const crosses = document.querySelectorAll(".delete-todo");
         for (let i=0; i < crosses.length; i++) {
           checkbox = crosses[i];
           checkbox.onclick = function(e) {
             // console.log(e);
             const todoId = e.target.dataset.todoId;
             // console.log(`change on ${todoId}`)
-            fetch(`/todos/${todoId}/delete`, {
-              method: 'GET'
+            fetch(`/todos/${todoId}`, {
+              method: 'DELETE'
             })
             .then(function() {
               document.getElementById('error').className = 'hidden';
@@ -107,7 +124,7 @@
         e.preventDefault();
         document.getElementById('error').className = 'hidden';
 
-        fetch('/todos', {
+        fetch('/lists/{{active_list.id}}/todos', {
           method: 'POST',
           body: JSON.stringify({
             'description': document.getElementById('description').value
@@ -135,16 +152,13 @@
 
           let delButton = document.createElement('button');
           delButton.setAttribute("data-todo-id", todo_id );
-          delButton.setAttribute("class", "delete-item");
+          delButton.setAttribute("class", "delete-todo");
           delButton.innerHTML = "&cross;";
           console.log(delButton);
 
           r = liItem.appendChild(checkbox);
-          console.log(1, r);
           r = liItem.appendChild(label);
-          console.log(2, r);
           r = liItem.appendChild(delButton);
-          console.log(3, r);
 
           list = document.getElementById('todos').appendChild(liItem);
           set_checkboxes();
