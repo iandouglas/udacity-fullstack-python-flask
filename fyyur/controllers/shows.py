@@ -1,50 +1,26 @@
 from flask import render_template, flash
 from forms import *
+from sqlalchemy.sql import func
 
 
-def make_routes(app):
+def make_routes(app, db, models):
     @app.route('/shows')
     def shows():
-        # displays list of shows at /shows
-        # TODO: replace with real venues data.
-        #       num_shows should be aggregated based on number of upcoming shows per venue.
-        # data = [{
-        #     "venue_id": 1,
-        #     "venue_name": "The Musical Hop",
-        #     "artist_id": 4,
-        #     "artist_name": "Guns N Petals",
-        #     "artist_image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80",
-        #     "start_time": "2019-05-21T21:30:00"
-        # }, {
-        #     "venue_id": 3,
-        #     "venue_name": "Park Square Live Music & Coffee",
-        #     "artist_id": 5,
-        #     "artist_name": "Matt Quevedo",
-        #     "artist_image_link": "https://images.unsplash.com/photo-1495223153807-b916f75de8c5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80",
-        #     "start_time": "2019-06-15T23:00:00"
-        # }, {
-        #     "venue_id": 3,
-        #     "venue_name": "Park Square Live Music & Coffee",
-        #     "artist_id": 6,
-        #     "artist_name": "The Wild Sax Band",
-        #     "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-        #     "start_time": "2035-04-01T20:00:00"
-        # }, {
-        #     "venue_id": 3,
-        #     "venue_name": "Park Square Live Music & Coffee",
-        #     "artist_id": 6,
-        #     "artist_name": "The Wild Sax Band",
-        #     "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-        #     "start_time": "2035-04-08T20:00:00"
-        # }, {
-        #     "venue_id": 3,
-        #     "venue_name": "Park Square Live Music & Coffee",
-        #     "artist_id": 6,
-        #     "artist_name": "The Wild Sax Band",
-        #     "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-        #     "start_time": "2035-04-15T20:00:00"
-        # }]
-        data = []
+        data = db.session.query(
+                func.to_char(models['show'].start_time, 'YYYY-MM-DD HH24:MI:SS').label('start_time'),
+                models['venue'].id.label('venue_id'),
+                models['venue'].name.label('venue_name'),
+                models['artist'].id.label('artist_id'),
+                models['artist'].name.label('artist_name'),
+                models['artist'].image_link.label('artist_image_link'))\
+            .filter(
+                models['show'].artist_id == models['artist'].id,
+                models['show'].venue_id == models['venue'].id)\
+            .order_by(models['show'].start_time)\
+            .all()
+        print('-'*80)
+        print(data)
+        print('-'*80)
         return render_template('pages/shows.html', shows=data)
 
     @app.route('/shows/create')

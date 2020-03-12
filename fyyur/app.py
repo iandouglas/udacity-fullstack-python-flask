@@ -112,7 +112,7 @@ def format_datetime(value, format='medium'):
 
 app.jinja_env.filters['datetime'] = format_datetime
 
-
+models = {'artist': Artist, 'venue': Venue, 'show': Show}
 # ----------------------------------------------------------------------------#
 # Controllers.
 # ----------------------------------------------------------------------------#
@@ -128,7 +128,7 @@ artists.make_routes(app)
 
 #  Shows
 #  ----------------------------------------------------------------
-shows.make_routes(app)
+shows.make_routes(app, db, models)
 
 
 if not app.debug:
