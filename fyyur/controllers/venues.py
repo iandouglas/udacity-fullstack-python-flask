@@ -108,23 +108,17 @@ def make_routes(app, db, models):
     @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
     def edit_venue(venue_id):
         form = VenueForm()
-        # venue = {
-        #     "id": 1,
-        #     "name": "The Musical Hop",
-        #     "genres": ["Jazz", "Reggae", "Swing", "Classical", "Folk"],
-        #     "address": "1015 Folsom Street",
-        #     "city": "San Francisco",
-        #     "state": "CA",
-        #     "phone": "123-123-1234",
-        #     "website": "https://www.themusicalhop.com",
-        #     "facebook_link": "https://www.facebook.com/TheMusicalHop",
-        #     "seeking_talent": True,
-        #     "seeking_description": "We are on the lookout for a local artist to play every two weeks. Please call us.",
-        #     "image_link": "https://images.unsplash.com/photo-1543900694-133f37abaaa5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60"
-        # }
-        venue = {}
-        # TODO: populate form with values from venue with ID <venue_id>
-        return render_template('forms/edit_venue.html', form=form, venue=venue)
+        venue = db.session.query(models['venue']).get(venue_id)
+        if venue:
+            form.name.data = venue.name
+            form.city.data = venue.city
+            form.state.data = venue.state
+            form.address.data = venue.address
+            form.phone.data = venue.phone
+            form.genres.data = [genre.name for genre in venue.genres]
+            form.facebook_link.data = venue.facebook_link
+            return render_template('forms/edit_venue.html', form=form, venue=venue)
+        return render_template('errors/404.html')
 
     @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
     def edit_venue_submission(venue_id):
