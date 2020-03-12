@@ -73,6 +73,8 @@ def make_routes(app, db, models):
 
     @app.route('/venues/<int:venue_id>')
     def show_venue(venue_id):
+        data = db.session.query(models['venue']).get(venue_id).info()
+
         # shows the venue page with the given venue_id
         # TODO: replace with real venue data from the venues table, using venue_id
         # data1 = {
@@ -153,7 +155,6 @@ def make_routes(app, db, models):
         #     "upcoming_shows_count": 1,
         # }
         # data = list(filter(lambda d: d['id'] == venue_id, [data1, data2, data3]))[0]
-        data = []
         return render_template('pages/show_venue.html', venue=data)
 
     #  Create Venue

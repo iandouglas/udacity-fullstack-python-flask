@@ -67,6 +67,52 @@ class Venue(db.Model):
     def __repr__(self):
         return f'Venue: id:{self.id}, {self.name}'
 
+    def info(self):
+        past_shows = self.get_shows(Show.start_time <= datetime.now())
+        upcoming_shows = self.get_shows(Show.start_time > datetime.now())
+
+        return {
+            'id': self.id,
+            'name': self.name,
+            'genres': self.genres,
+            'address': self.address,
+            'city': self.city,
+            'state': self.state,
+            'phone': self.phone,
+            'website': self.website,
+            'facebook_link': self.facebook_link,
+            'seeking_talent': self.seeking_talent,
+            'seeking_description': self.seeking_description,
+            'image_link': self.image_link,
+            'past_shows': past_shows,
+            'upcoming_shows': upcoming_shows,
+            'past_shows_count': len(past_shows),
+            'upcoming_shows_count': len(upcoming_shows)
+        }
+
+    def get_shows(self, comparison):
+        results = []
+
+        for show in db.session.query(
+                Show.artist_id.label('artist_id'),
+                Artist.name.label('artist_name'),
+                Artist.image_link.label('artist_image_link'),
+                func.to_char(Show.start_time, 'YYYY-MM-DD HH24:MI:SS').label('start_time')
+            ).filter(
+                Show.artist_id == Artist.id,
+                Show.venue_id == self.id
+            ).filter(
+                comparison
+            ).all():
+
+            results.append({
+                'artist_id': show.artist_id,
+                'artist_name': show.artist_name,
+                'artist_image_link': show.artist_image_link,
+                'start_time': show.start_time
+            })
+        return results
+
 
 class Artist(db.Model):
     __tablename__ = 'Artist'
@@ -142,7 +188,7 @@ class Genre(db.Model):
     name = db.Column(db.String, index=True)
 
     def __repr__(self):
-        return f'Genre: id:{self.id}, {self.name}'
+        return f'{self.name}'
 
 
 class Show(db.Model):
