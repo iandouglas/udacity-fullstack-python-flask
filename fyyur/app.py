@@ -14,6 +14,9 @@ from flask_wtf import Form
 from flask_migrate import Migrate
 from controllers import base, venues, artists, shows
 from dateutil import tz
+from datetime import datetime
+from sqlalchemy.sql import func
+
 
 # ----------------------------------------------------------------------------#
 # App Config.
@@ -59,7 +62,10 @@ class Venue(db.Model):
     seeking_description = db.Column(db.String(500))
 
     genres = db.relationship('Genre', secondary=venue_genres, backref=db.backref('venues', lazy=True))
-    shows = db.relationship('Show', backref='venue', lazy=True)
+    shows = db.relationship('Show', backref='venue', lazy='dynamic')
+
+    def __repr__(self):
+        return f'Venue: id:{self.id}, {self.name}'
 
 
 class Artist(db.Model):
@@ -79,6 +85,54 @@ class Artist(db.Model):
     genres = db.relationship('Genre', secondary=artist_genres, backref=db.backref('genres', lazy=True))
     shows = db.relationship('Show', backref='artist', lazy=True)
 
+    def __repr__(self):
+        return f'Artist: id:{self.id}, {self.name}'
+
+    def info(self):
+        past_shows = self.get_shows(Show.start_time <= datetime.now())
+        upcoming_shows = self.get_shows(Show.start_time > datetime.now())
+
+        return {
+            'id': self.id,
+            'name': self.name,
+            'genres': self.genres,
+            'city': self.city,
+            'state': self.state,
+            'phone': self.phone,
+            'website': self.website,
+            'facebook_link': self.facebook_link,
+            'seeking_venue': self.seeking_venue,
+            'seeking_description': self.seeking_description,
+            'image_link': self.image_link,
+            'past_shows': past_shows,
+            'upcoming_shows': upcoming_shows,
+            'past_shows_count': len(past_shows),
+            'upcoming_shows_count': len(upcoming_shows)
+        }
+
+    def get_shows(self, comparison):
+        results = []
+
+        for show in db.session.query(
+                Show.venue_id.label('venue_id'),
+                Venue.name.label('venue_name'),
+                Venue.image_link.label('venue_image_link'),
+                func.to_char(Show.start_time, 'YYYY-MM-DD HH24:MI:SS').label('start_time')
+            ).filter(
+                Show.artist_id == self.id,
+                Show.venue_id == Venue.id
+            ).filter(
+                comparison
+            ).all():
+
+            results.append({
+                'venue_id': show.venue_id,
+                'venue_name': show.venue_name,
+                'venue_image_link': show.venue_image_link,
+                'start_time': show.start_time
+            })
+        return results
+
 
 # Implement Show and Genre models, and complete all model relationships and properties, as a database migration.
 class Genre(db.Model):
@@ -86,6 +140,9 @@ class Genre(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, index=True)
+
+    def __repr__(self):
+        return f'Genre: id:{self.id}, {self.name}'
 
 
 class Show(db.Model):
@@ -96,6 +153,17 @@ class Show(db.Model):
     artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'), nullable=False)
     venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'), nullable=False)
 
+    def __repr__(self):
+        return f'Show: id:{self.id}, {self.start_time}, {self.venue.name}, {self.artist.name}'
+
+    def venue_info(self):
+        show_venue = self.venue
+        return {
+            'venue_id': show_venue.id,
+            'venue_name': show_venue.name,
+            'venue_image_link': show_venue.image_link,
+            'start_time': self.start_time
+        }
 # ----------------------------------------------------------------------------#
 # Filters.
 # ----------------------------------------------------------------------------#
