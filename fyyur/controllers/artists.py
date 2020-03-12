@@ -2,21 +2,17 @@ from flask import render_template, flash, request, redirect, url_for
 from forms import *
 
 
-def make_routes(app):
+def make_routes(app, db, models):
     @app.route('/artists')
     def artists():
-        # TODO: replace with real data returned from querying the database
-        # data = [{
-        #     "id": 4,
-        #     "name": "Guns N Petals",
-        # }, {
-        #     "id": 5,
-        #     "name": "Matt Quevedo",
-        # }, {
-        #     "id": 6,
-        #     "name": "The Wild Sax Band",
-        # }]
-        data = []
+        data = db.session.query(
+                models['artist'].id.label('id'),
+                models['artist'].name.label('name')
+            ).order_by(models['artist'].id).all()
+        print('-'*80)
+        print(data)
+        print('-'*80)
+
         return render_template('pages/artists.html', artists=data)
 
     @app.route('/artists/search', methods=['POST'])

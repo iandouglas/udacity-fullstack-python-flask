@@ -124,7 +124,7 @@ venues.make_routes(app)
 
 #  Artists
 #  ----------------------------------------------------------------
-artists.make_routes(app)
+artists.make_routes(app, db, models)
 
 #  Shows
 #  ----------------------------------------------------------------

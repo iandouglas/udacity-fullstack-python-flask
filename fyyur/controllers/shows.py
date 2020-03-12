@@ -12,15 +12,11 @@ def make_routes(app, db, models):
                 models['venue'].name.label('venue_name'),
                 models['artist'].id.label('artist_id'),
                 models['artist'].name.label('artist_name'),
-                models['artist'].image_link.label('artist_image_link'))\
-            .filter(
+                models['artist'].image_link.label('artist_image_link')
+            ).filter(
                 models['show'].artist_id == models['artist'].id,
-                models['show'].venue_id == models['venue'].id)\
-            .order_by(models['show'].start_time)\
-            .all()
-        print('-'*80)
-        print(data)
-        print('-'*80)
+                models['show'].venue_id == models['venue'].id
+            ).order_by(models['show'].start_time).all()
         return render_template('pages/shows.html', shows=data)
 
     @app.route('/shows/create')
