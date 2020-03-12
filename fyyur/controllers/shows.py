@@ -6,17 +6,20 @@ from sqlalchemy.sql import func
 def make_routes(app, db, models):
     @app.route('/shows')
     def shows():
+        show_model = models['show']
+        venue_model = models['venue']
+        artist_model = models['artist']
         data = db.session.query(
-                func.to_char(models['show'].start_time, 'YYYY-MM-DD HH24:MI:SS').label('start_time'),
-                models['venue'].id.label('venue_id'),
-                models['venue'].name.label('venue_name'),
-                models['artist'].id.label('artist_id'),
-                models['artist'].name.label('artist_name'),
-                models['artist'].image_link.label('artist_image_link')
+                func.to_char(show_model.start_time, 'YYYY-MM-DD HH24:MI:SS').label('start_time'),
+                venue_model.id.label('venue_id'),
+                venue_model.name.label('venue_name'),
+                artist_model.id.label('artist_id'),
+                artist_model.name.label('artist_name'),
+                artist_model.image_link.label('artist_image_link')
             ).filter(
-                models['show'].artist_id == models['artist'].id,
-                models['show'].venue_id == models['venue'].id
-            ).order_by(models['show'].start_time).all()
+                show_model.artist_id == artist_model.id,
+                show_model.venue_id == venue_model.id
+            ).order_by(show_model.start_time).all()
         return render_template('pages/shows.html', shows=data)
 
     @app.route('/shows/create')

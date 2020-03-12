@@ -5,10 +5,11 @@ from forms import *
 def make_routes(app, db, models):
     @app.route('/artists')
     def artists():
+        artist_model = models['artist']
         data = db.session.query(
-                models['artist'].id.label('id'),
-                models['artist'].name.label('name')
-            ).order_by(models['artist'].id).all()
+                artist_model.id.label('id'),
+                artist_model.name.label('name')
+            ).order_by(artist_model.id).all()
         return render_template('pages/artists.html', artists=data)
 
     @app.route('/artists/search', methods=['POST'])
