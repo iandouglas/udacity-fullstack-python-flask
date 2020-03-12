@@ -120,7 +120,7 @@ base.make_routes(app)
 
 #  Venues
 #  ----------------------------------------------------------------
-venues.make_routes(app)
+venues.make_routes(app, db, models)
 
 #  Artists
 #  ----------------------------------------------------------------

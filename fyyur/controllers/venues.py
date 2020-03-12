@@ -2,34 +2,42 @@ from flask import render_template, flash, request, redirect, url_for
 from forms import *
 
 
-def make_routes(app):
+def make_routes(app, db, models):
 
     @app.route('/venues')
     def venues():
-        # TODO: replace with real venues data.
-        #       num_shows should be aggregated based on number of upcoming shows per venue.
-        # data = [{
-        #     "city": "San Francisco",
-        #     "state": "CA",
-        #     "venues": [{
-        #         "id": 1,
-        #         "name": "The Musical Hop",
-        #         "num_upcoming_shows": 0,
-        #     }, {
-        #         "id": 3,
-        #         "name": "Park Square Live Music & Coffee",
-        #         "num_upcoming_shows": 1,
-        #     }]
-        # }, {
-        #     "city": "New York",
-        #     "state": "NY",
-        #     "venues": [{
-        #         "id": 2,
-        #         "name": "The Dueling Pianos Bar",
-        #         "num_upcoming_shows": 0,
-        #     }]
-        # }]
+        results = models['venue'].query.\
+            order_by(
+                models['venue'].state,
+                models['venue'].city,
+                models['venue'].id
+            ).all()
+        last_city_state = ''
         data = []
+        city_state = {}
+        for venue in results:
+            if '{}, {}'.format(venue.city, venue.state) != last_city_state:
+                if 'venues' in city_state:
+                    data.append(city_state)
+                print('new city: {},{}'.format(venue.city, venue.state))
+                city_state = {
+                    'city': venue.city,
+                    'state': venue.state,
+                    'venues': [],
+                }
+                last_city_state = '{}, {}'.format(venue.city, venue.state)
+            # would be better to fetch fields in the query above plus a database count
+            # instead of the n+1 query I have here
+            venue_shows = models['venue'].query.get(venue.id).shows
+            # need to only fetch shows after today's date
+            city_state['venues'].append({
+                'id': venue.id,
+                'name': venue.name,
+                'num_upcoming_shows': len(venue_shows),
+            })
+        if 'venues' in city_state:
+            data.append(city_state)
+
         return render_template('pages/venues.html', areas=data)
 
     @app.route('/venues/search', methods=['POST'])

@@ -9,10 +9,6 @@ def make_routes(app, db, models):
                 models['artist'].id.label('id'),
                 models['artist'].name.label('name')
             ).order_by(models['artist'].id).all()
-        print('-'*80)
-        print(data)
-        print('-'*80)
-
         return render_template('pages/artists.html', artists=data)
 
     @app.route('/artists/search', methods=['POST'])
