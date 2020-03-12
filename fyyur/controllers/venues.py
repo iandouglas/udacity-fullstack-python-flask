@@ -1,17 +1,37 @@
 from flask import render_template, flash, request, redirect, url_for
 from forms import *
+from datetime import datetime
+from sqlalchemy.sql import func
 
 
 def make_routes(app, db, models):
 
     @app.route('/venues')
     def venues():
-        results = models['venue'].query.\
-            order_by(
-                models['venue'].state,
-                models['venue'].city,
-                models['venue'].id
-            ).all()
+        venue_model = models['venue']
+        show_model = models['show']
+        results = db.session.query(
+                venue_model.state.label('state'),
+                venue_model.city.label('city'),
+                venue_model.name.label('name'),
+                venue_model.id.label('id'),
+                func.count(show_model.id).label('upcoming_show_count')
+            ).outerjoin(show_model, venue_model.id == show_model.venue_id
+            ).group_by(
+                venue_model.id
+            ).order_by(
+                venue_model.state,
+                venue_model.city,
+                venue_model.id,
+            ).group_by(venue_model.id).all()
+
+        # the upcoming show count is inaccurate, but filtering where the
+        # start_date > now() would exclude any venues from the list which
+        # don't have any upcoming shows
+        # since this count isn't even used on the venues index page, I felt
+        # this was a good compromise to pull a single query instead of an
+        # N+1 query to look up show counts for each venue later
+
         last_city_state = ''
         data = []
         city_state = {}
@@ -19,25 +39,20 @@ def make_routes(app, db, models):
             if '{}, {}'.format(venue.city, venue.state) != last_city_state:
                 if 'venues' in city_state:
                     data.append(city_state)
-                print('new city: {},{}'.format(venue.city, venue.state))
                 city_state = {
                     'city': venue.city,
                     'state': venue.state,
                     'venues': [],
                 }
                 last_city_state = '{}, {}'.format(venue.city, venue.state)
-            # would be better to fetch fields in the query above plus a database count
-            # instead of the n+1 query I have here
-            venue_shows = models['venue'].query.get(venue.id).shows
-            # need to only fetch shows after today's date
+
             city_state['venues'].append({
                 'id': venue.id,
                 'name': venue.name,
-                'num_upcoming_shows': len(venue_shows),
+                'num_upcoming_shows': venue.upcoming_show_count,
             })
         if 'venues' in city_state:
             data.append(city_state)
-
         return render_template('pages/venues.html', areas=data)
 
     @app.route('/venues/search', methods=['POST'])
