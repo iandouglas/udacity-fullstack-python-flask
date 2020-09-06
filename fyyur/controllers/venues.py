@@ -99,9 +99,6 @@ def make_routes(app, db, models):
         data = db.session.query(models['venue']).get(venue_id).info()
         return render_template('pages/show_venue.html', venue=data)
 
-    #  Create Venue
-    #  ----------------------------------------------------------------
-
     @app.route('/venues/create', methods=['GET'])
     def create_venue_form():
         form = VenueForm()
@@ -141,7 +138,7 @@ def make_routes(app, db, models):
             return render_template('pages/home.html')
         else:
             flash('Venue ' + request.form['name'] + ' was successfully listed!')
-            return render_template('pages/venues.html')
+            return redirect(url_for('venues'))
 
     @app.route('/venues/<venue_id>', methods=['DELETE'])
     def delete_venue(venue_id):
