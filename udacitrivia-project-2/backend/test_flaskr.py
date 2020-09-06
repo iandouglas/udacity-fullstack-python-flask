@@ -38,18 +38,20 @@ class TriviaTestCase(unittest.TestCase):
         response = self.client().head('/')
 
         self.assertIn('Access-Control-Allow-Origin', response.headers)
-        self.assertEqual(response.headers['Access-Control-Allow-Origin'], '*')
+        self.assertEqual('*', response.headers['Access-Control-Allow-Origin'])
         self.assertIn('Access-Control-Allow-Headers', response.headers)
-        self.assertEqual(response.headers['Access-Control-Allow-Headers'], 'Content-Type')
+        self.assertEqual('Content-Type', response.headers['Access-Control-Allow-Headers'])
         self.assertIn('Access-Control-Allow-Methods', response.headers)
-        self.assertEqual(response.headers['Access-Control-Allow-Methods'], 'GET, PATCH, POST, DELETE, OPTIONS')
+        self.assertEqual('GET, PATCH, POST, DELETE, OPTIONS', response.headers['Access-Control-Allow-Methods'])
 
     def test_get_categories_happypath(self):
         # TODO set up categories
         response = self.client().get('/categories')
 
-        self.assertEqual(response.status, 200)
-
+        self.assertEqual(200, response.status)
+        data = json.loads(response.data.decode('utf-8'))
+        self.assertIs(data, list)
+        self.assertEquals(3, len(data['results']))
 
 # Make the tests conveniently executable
 if __name__ == "__main__":
