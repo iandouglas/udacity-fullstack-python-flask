@@ -54,10 +54,31 @@ def make_routes(app, db, models):
 
     @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
     def edit_artist_submission(artist_id):
-        # TODO: take values from the form submitted, and update existing
-        # artist record with ID <artist_id> using the new attributes
+        data = request.form
+        try:
+            artist = models['artist'].query.get(artist_id)
+            artist.name = bleach.clean(data['name'])
+            artist.city = bleach.clean(data['city'])
+            artist.state = bleach.clean(data['state'])
+            artist.phone = bleach.clean(data['phone'])
+            artist.facebook_link = bleach.clean(data['facebook_link'])
 
+            # reset genres here
+            artist.genres = []
+            db.session.commit()
+            artist.genres = add_or_get_genre_objects(
+                db.session,
+                models['genre'],
+                request.form.getlist('genres')
+            )
+            db.session.commit()
+        except:
+            db.session.rollback()
+            return redirect(url_for('edit_artist', artist_id=artist_id))
+        finally:
+            db.session.close()
         return redirect(url_for('show_artist', artist_id=artist_id))
+
 
     #  Create Artist
     #  ----------------------------------------------------------------
@@ -80,12 +101,11 @@ def make_routes(app, db, models):
                 facebook_link=bleach.clean(data['facebook_link'])
             )
 
-            genre_list = add_or_get_genre_objects(
+            artist.genres = add_or_get_genre_objects(
                 db.session,
                 models['genre'],
                 request.form.getlist('genres')
             )
-            artist.genres = genre_list
             db.session.add(artist)
             db.session.commit()
         except:
