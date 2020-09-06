@@ -1,5 +1,9 @@
 from flask import render_template
 
+"""
+Generic routing for error handling and the 'home' page
+"""
+
 
 def make_routes(app):
 

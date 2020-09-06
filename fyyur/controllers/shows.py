@@ -11,6 +11,9 @@ from sqlalchemy.sql import func
 def make_routes(app, db, models):
     @app.route('/shows')
     def shows():
+        """
+        build the data necessary for the show "index" page
+        """
         show_model = models['show']
         venue_model = models['venue']
         artist_model = models['artist']
@@ -29,6 +32,11 @@ def make_routes(app, db, models):
 
     @app.route('/shows/search', methods=['POST'])
     def search_shows():
+        """
+        My attempt at processing a show search; my thought process here was to cast the
+        date as a string and do a search, but it didn't work and it's 2am, and it
+        wasn't required for the project anyway.
+        """
         search_term = bleach.clean(request.form['search_term'])
 
         show_model = models['show']
@@ -65,6 +73,12 @@ def make_routes(app, db, models):
     @app.route('/shows/create')
     def create_shows():
         # renders form. do not touch.
+        """
+        Sorry, but this form was lousy and I touched it a lot.
+        I rebuilt the form to allow for a select dropdown of all existing artists
+        and venues since that's WAY more user-friendly than making someone go
+        find ID values...
+        """
         artist_model = models['artist']
         venue_model = models['venue']
         form = ShowForm()
@@ -74,9 +88,14 @@ def make_routes(app, db, models):
 
     @app.route('/shows/create', methods=['POST'])
     def create_show_submission():
+        """
+        process form data for creating a new show
+        """
         try:
             artist = db.session.query(models['artist']).get(bleach.clean(request.form['artist']))
             venue = db.session.query(models['venue']).get(bleach.clean(request.form['venue']))
+            # i debated throwing a 404 error if either the artist or venue were not found
+
             show = models['show'](
                 start_time=bleach.clean(request.form['start_time']),
                 venue_id=venue.id,
@@ -93,4 +112,3 @@ def make_routes(app, db, models):
         finally:
             db.session.close()
         return redirect(url_for('shows'))
-

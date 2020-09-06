@@ -2,6 +2,30 @@
 # Imports
 # ----------------------------------------------------------------------------#
 
+"""
+Notes for my reviewer:
+
+I'm a big fan of the MVC design pattern and while Flask doesn't really fit the bill,
+I wanted to mimic this design pattern as best I could by moving code into
+'controllers' (which include their respective routes), while the model definitions
+stay here in app.py
+
+I've added unique constraints on some string fields in the models where I felt it
+made sense, per the rubric. I don't currently inter-spect the database exceptions
+to alert the user if a unique constraint has been tripped. All error messages to the
+user are rather generic in nature.
+
+I've added more documentation in the models below, and within each of the 'controller'
+files. I did my best to follow the rubric, though there were several TODO items
+within the starter code that were unnecessary and in some cases very confusing.
+For example, I attempted a show search before realizing it wasn't really necessary,
+but left the code in for your review anyway. (it doesn't work)
+
+I also made several tweaks to the templates, as necessary, to correct some submission
+buttons, etc. I also made some modifications to the forms.py file as well to DRY
+up some of the select dropdowns, and to modify the form for creating a show.
+"""
+
 import dateutil.parser
 import babel
 from flask import Flask
@@ -47,14 +71,14 @@ class Venue(db.Model):
     __tablename__ = 'Venue'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, index=True)
+    name = db.Column(db.String, index=True, unique=True)
     address = db.Column(db.String(120))
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
     phone = db.Column(db.String(120))
-    website = db.Column(db.String(120))
-    facebook_link = db.Column(db.String(120))
-    image_link = db.Column(db.String(500))
+    website = db.Column(db.String(120), unique=True)
+    facebook_link = db.Column(db.String(120), unique=True)
+    image_link = db.Column(db.String(500), unique=True)
     seeking_talent = db.Column(db.Boolean, default=False)
     seeking_description = db.Column(db.String(500))
 
@@ -65,6 +89,10 @@ class Venue(db.Model):
         return f'Venue: id:{self.id}, {self.name}'
 
     def info(self):
+        """
+        this info() method will build a structure of data to match the requirements
+        for the venue "index" or "show" pages.
+        """
         past_shows = self.get_shows(Show.start_time <= datetime.now())
         upcoming_shows = self.get_shows(Show.start_time > datetime.now())
 
@@ -88,6 +116,11 @@ class Venue(db.Model):
         }
 
     def get_shows(self, comparison):
+        """
+        A method to get all shows for a given venue
+        The 'comparison' parameter will allow us to search for shows which
+        are already over, or in the future.
+        """
         results = []
 
         for show in db.session.query(
@@ -115,13 +148,13 @@ class Artist(db.Model):
     __tablename__ = 'Artist'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, index=True)
+    name = db.Column(db.String, index=True, unique=True)
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
     phone = db.Column(db.String(120))
-    website = db.Column(db.String(120))
-    facebook_link = db.Column(db.String(120))
-    image_link = db.Column(db.String(500))
+    website = db.Column(db.String(120), unique=True)
+    facebook_link = db.Column(db.String(120), unique=True)
+    image_link = db.Column(db.String(500), unique=True)
     seeking_venue = db.Column(db.Boolean, default=False)
     seeking_description = db.Column(db.String(500))
 
@@ -132,6 +165,10 @@ class Artist(db.Model):
         return f'Artist: id:{self.id}, {self.name}'
 
     def info(self):
+        """
+        Similar to the Venue.info() method, this method will return the required information
+        needed for an Artist on the "index" or "show" pages.
+        """
         past_shows = self.get_shows(Show.start_time <= datetime.now())
         upcoming_shows = self.get_shows(Show.start_time > datetime.now())
 
@@ -154,6 +191,10 @@ class Artist(db.Model):
         }
 
     def get_shows(self, comparison):
+        """
+        Similar to the Venue.get_shows method, though this is one which I would
+        love to spend more time DRY'ing up.
+        """
         results = []
 
         for show in db.session.query(
@@ -182,7 +223,7 @@ class Genre(db.Model):
     __tablename__ = 'Genre'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, index=True)
+    name = db.Column(db.String, index=True, unique=True)
 
     def __repr__(self):
         return f'{self.name}'
@@ -207,10 +248,11 @@ class Show(db.Model):
             'venue_image_link': show_venue.image_link,
             'start_time': self.start_time
         }
+
+
 # ----------------------------------------------------------------------------#
 # Filters.
 # ----------------------------------------------------------------------------#
-
 
 def format_datetime(value, format='medium'):
     date = dateutil.parser.parse(value)
@@ -230,6 +272,11 @@ models = {
     'genre': Genre,
     'venue_genres': venue_genres
 }
+
+"""
+This is where I call the code which builds the routes for each of my controllers.
+You can view each controller for additional context.
+"""
 # ----------------------------------------------------------------------------#
 # Controllers.
 # ----------------------------------------------------------------------------#

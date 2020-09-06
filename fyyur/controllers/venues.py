@@ -12,6 +12,11 @@ def make_routes(app, db, models):
 
     @app.route('/venues')
     def venues():
+        """
+        venue "index" page data
+        this method is much bigger than I'd otherwise like; given the freedom to do so, I'd probably
+        look for a way to reduce the dictionary that gets built at the end
+        """
         venue_model = models['venue']
         show_model = models['show']
         results = db.session.query(
@@ -27,8 +32,6 @@ def make_routes(app, db, models):
                 venue_model.state,
                 venue_model.city,
                 venue_model.name,
-            ).group_by(
-                venue_model.id
             ).all()
 
         last_city_state = ''
@@ -56,6 +59,9 @@ def make_routes(app, db, models):
 
     @app.route('/venues/search', methods=['POST'])
     def search_venues():
+        """
+        venue search implementation
+        """
         response = entity_search(
             db.session,
             models['venue'],
@@ -68,16 +74,25 @@ def make_routes(app, db, models):
 
     @app.route('/venues/<int:venue_id>')
     def show_venue(venue_id):
+        """
+        venue "show" page
+        """
         data = db.session.query(models['venue']).get(venue_id).info()
         return render_template('pages/show_venue.html', venue=data)
 
     @app.route('/venues/create', methods=['GET'])
     def create_venue_form():
+        """
+        set up the form for creating a new venue
+        """
         form = VenueForm()
         return render_template('forms/new_venue.html', form=form)
 
     @app.route('/venues/create', methods=['POST'])
     def create_venue_submission():
+        """
+        process form submission for creating a new venue
+        """
         data = request.form
         error = False
         try:
@@ -114,6 +129,10 @@ def make_routes(app, db, models):
 
     @app.route('/venues/<venue_id>', methods=['DELETE'])
     def delete_venue(venue_id):
+        """
+        this was fun to build; I used a bit of JavaScript to do a delete fetch
+        call to this endpoint and send back a true/false for success
+        """
         venue = None
         try:
             venue = db.session.query(models['venue']).get(venue_id)
@@ -135,6 +154,9 @@ def make_routes(app, db, models):
 
     @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
     def edit_venue(venue_id):
+        """
+        set up the form to prepare to edit a venue
+        """
         form = VenueForm()
         venue = db.session.query(models['venue']).get(venue_id)
         if venue:
@@ -150,6 +172,9 @@ def make_routes(app, db, models):
 
     @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
     def edit_venue_submission(venue_id):
+        """
+        process the form submission for editing a venue
+        """
         data = request.form
         try:
             venue = models['venue'].query.get(venue_id)
@@ -161,13 +186,13 @@ def make_routes(app, db, models):
             venue.facebook_link = bleach.clean(data['facebook_link'])
 
             # reset genres here
-            venue.genres = []
+            venue.genres = [] # delete all previous genres
             db.session.commit()
             venue.genres = add_or_get_genre_objects(
                 db.session,
                 models['genre'],
                 request.form.getlist('genres')
-            )
+            ) # and rebuild a new list of genres
             db.session.commit()
         except:
             db.session.rollback()
@@ -178,5 +203,3 @@ def make_routes(app, db, models):
             db.session.close()
         flash('Venue successfully updated.')
         return redirect(url_for('show_venue', venue_id=venue_id))
-
-

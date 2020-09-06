@@ -2,14 +2,20 @@ import sys
 
 from flask import render_template, flash, request, redirect, url_for
 from forms import *
+
+# bleach is a utility to 'sanitize' user input
 import bleach
 
+# these are some helper methods I use, you can review utils.py for more notes
 from .utils import entity_search, add_or_get_genre_objects
 
 
 def make_routes(app, db, models):
     @app.route('/artists')
     def artists():
+        """
+        artist "index" page
+        """
         artist_model = models['artist']
         data = db.session.query(
                 artist_model.id.label('id'),
@@ -21,6 +27,9 @@ def make_routes(app, db, models):
 
     @app.route('/artists/search', methods=['POST'])
     def search_artists():
+        """
+        artist "search" results builder
+        """
         response = entity_search(
             db.session,
             models['artist'],
@@ -33,6 +42,9 @@ def make_routes(app, db, models):
 
     @app.route('/artists/<int:artist_id>')
     def show_artist(artist_id):
+        """
+        artist "show" page
+        """
         data = db.session.query(models['artist']).get(artist_id).info()
         return render_template('pages/show_artist.html', artist=data)
 
@@ -40,6 +52,9 @@ def make_routes(app, db, models):
     #  ----------------------------------------------------------------
     @app.route('/artists/<int:artist_id>/edit', methods=['GET'])
     def edit_artist(artist_id):
+        """
+        code to build the form to edit an existing artist
+        """
         form = ArtistForm()
         artist = db.session.query(models['artist']).get(artist_id)
         if artist:
@@ -54,6 +69,9 @@ def make_routes(app, db, models):
 
     @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
     def edit_artist_submission(artist_id):
+        """
+        code to process form data for editing an artist
+        """
         data = request.form
         try:
             artist = models['artist'].query.get(artist_id)
@@ -64,13 +82,13 @@ def make_routes(app, db, models):
             artist.facebook_link = bleach.clean(data['facebook_link'])
 
             # reset genres here
-            artist.genres = []
+            artist.genres = [] # delete their old genres
             db.session.commit()
             artist.genres = add_or_get_genre_objects(
                 db.session,
                 models['genre'],
                 request.form.getlist('genres')
-            )
+            ) # and rebuild new genres
             db.session.commit()
         except:
             db.session.rollback()
@@ -85,11 +103,17 @@ def make_routes(app, db, models):
 
     @app.route('/artists/create', methods=['GET'])
     def create_artist_form():
+        """
+        form builder for creating an artist
+        """
         form = ArtistForm()
         return render_template('forms/new_artist.html', form=form)
 
     @app.route('/artists/create', methods=['POST'])
     def create_artist_submission():
+        """
+        processes form submission for creating a new artist
+        """
         data = request.form
         error = False
         try:
@@ -121,4 +145,3 @@ def make_routes(app, db, models):
         else:
             flash('Artist ' + request.form['name'] + ' was successfully listed!')
             return redirect(url_for('artists'))
-
