@@ -1,6 +1,21 @@
 {% extends 'layouts/main.html' %}
 {% block title %}Venue Search{% endblock %}
 {% block content %}
+<script type="text/javascript">
+function deleteVenue(venue_id) {
+    fetch(`/venues/${venue_id}`, {
+        method: 'DELETE'
+    }).then(response => response.json())
+    .then((json) => {
+        // reload to show flash message
+        if (json['success'] === true) {
+            document.location = '/venues'
+        } else {
+            document.location = `/venues/${venue_id}`
+        }
+    }).catch(error => error);
+};
+</script>
 <div class="row">
 	<div class="col-sm-6">
 		<h1 class="monospace">
@@ -8,6 +23,8 @@
 		</h1>
 		<p class="subtitle">
 			ID: {{ venue.id }}
+            <br /><a href="/venues/{{ venue.id }}/edit"><button>Edit Venue</button></a><br/>
+            <button onClick="deleteVenue({{ venue.id }})">Delete Venue</button>
 		</p>
 		<div class="genres">
 			{% for genre in venue.genres %}

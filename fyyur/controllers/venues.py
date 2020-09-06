@@ -1,6 +1,6 @@
 import sys
 
-from flask import render_template, flash, request, redirect, url_for, abort
+from flask import render_template, flash, request, redirect, url_for, abort, jsonify
 from forms import *
 from sqlalchemy.sql import func
 import bleach
@@ -114,12 +114,24 @@ def make_routes(app, db, models):
 
     @app.route('/venues/<venue_id>', methods=['DELETE'])
     def delete_venue(venue_id):
-        # TODO: Complete this endpoint for taking a venue_id, and using
-        # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
+        venue = None
+        try:
+            venue = db.session.query(models['venue']).get(venue_id)
+            venue.genres = []
+            db.session.commit()
+            models['venue'].query.filter_by(id=venue_id).delete()
+            db.session.commit()
+            flash('Venue successfully deleted.')
+        except:
+            db.session.rollback()
+            print(sys.exc_info())
+            flash('An error occurred. Venue not deleted.')
+            if venue:
+                return jsonify({'success': False})
+        finally:
+            db.session.close()
+        return jsonify({'success': True})
 
-        # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
-        # clicking that button delete it from the db then redirect the user to the homepage
-        return None
 
     @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
     def edit_venue(venue_id):
@@ -138,8 +150,33 @@ def make_routes(app, db, models):
 
     @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
     def edit_venue_submission(venue_id):
-        # TODO: take values from the form submitted, and update existing
-        # venue record with ID <venue_id> using the new attributes
+        data = request.form
+        try:
+            venue = models['venue'].query.get(venue_id)
+            venue.name = bleach.clean(data['name'])
+            venue.address = bleach.clean(data['address'])
+            venue.city = bleach.clean(data['city'])
+            venue.state = bleach.clean(data['state'])
+            venue.phone = bleach.clean(data['phone'])
+            venue.facebook_link = bleach.clean(data['facebook_link'])
+
+            # reset genres here
+            venue.genres = []
+            db.session.commit()
+            venue.genres = add_or_get_genre_objects(
+                db.session,
+                models['genre'],
+                request.form.getlist('genres')
+            )
+            db.session.commit()
+        except:
+            db.session.rollback()
+            flash('An error occurred. Venue ' + request.form['name'] + ' could not be listed.')
+            print(sys.exc_info())
+            return redirect(url_for('edit_venue', venue_id=venue_id))
+        finally:
+            db.session.close()
+        flash('Venue successfully updated.')
         return redirect(url_for('show_venue', venue_id=venue_id))
 
 
