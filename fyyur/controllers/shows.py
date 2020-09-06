@@ -2,6 +2,8 @@ import sys
 
 import bleach
 from flask import render_template, flash, request, url_for, redirect
+from sqlalchemy import String, cast
+
 from forms import *
 from sqlalchemy.sql import func
 
@@ -24,6 +26,41 @@ def make_routes(app, db, models):
                 show_model.venue_id == venue_model.id
             ).order_by(show_model.start_time).all()
         return render_template('pages/shows.html', shows=data)
+
+    @app.route('/shows/search', methods=['POST'])
+    def search_shows():
+        search_term = bleach.clean(request.form['search_term'])
+
+        show_model = models['show']
+        artist_model = models['artist']
+        venue_model = models['venue']
+
+        shows = db.session.query(
+            artist_model.id.label('artist_id'),
+            artist_model.name.label('artist_name'),
+            artist_model.image_link.label('artist_image_link'),
+            venue_model.id.label('venue_id'),
+            venue_model.name.label('venue_name'),
+            show_model.start_time.label('start_time'),
+        ).filter(
+            cast(show_model.start_time, String).ilike("%" + search_term + "%")
+        ).join(
+            artist_model,
+            artist_model.id == show_model.artist_id
+        ).join(
+            venue_model,
+            venue_model.id == show_model.artist_id
+        ).order_by(
+            show_model.start_time,
+        ).all()
+
+        results = {
+            "count": len(shows),
+            "data": shows
+        }
+
+        return render_template('pages/search_shows.html', results=results,
+                               search_term=request.form.get('search_term', ''))
 
     @app.route('/shows/create')
     def create_shows():

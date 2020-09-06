@@ -2,7 +2,6 @@ from datetime import datetime
 from flask_wtf import Form
 from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField
 from wtforms.validators import DataRequired, AnyOf, URL
-from wtforms.ext.sqlalchemy.fields import QuerySelectField
 
 def state_list():
     return SelectField(
@@ -65,7 +64,6 @@ def state_list():
 
 def genre_list():
     return SelectMultipleField(
-        # TODO implement enum restriction
         'genres', validators=[DataRequired()],
         choices=[
             ('Alternative', 'Alternative'),
@@ -132,7 +130,6 @@ class ArtistForm(Form):
     state = state_list()
 
     phone = StringField(
-        # TODO implement validation logic for state
         'phone'
     )
     image_link = StringField(
@@ -141,8 +138,5 @@ class ArtistForm(Form):
     genres = genre_list()
 
     facebook_link = StringField(
-        # TODO implement enum restriction
         'facebook_link', validators=[URL()]
     )
-
-# TODO IMPLEMENT NEW SHOW FORM
