@@ -1,7 +1,21 @@
-from flask import render_template, flash, request, redirect, url_for
+import sys
+
+from flask import render_template, flash, request, redirect, url_for, abort
 from forms import *
 from datetime import datetime
-from sqlalchemy.sql import func
+from sqlalchemy.sql import func, ClauseElement
+import bleach
+
+
+def get_or_create_genre(db_session, genre_model, genre_name):
+    instance = db_session.query(genre_model).filter_by(name=genre_name).first()
+    if instance:
+        return instance
+
+    instance = genre_model(name=genre_name)
+    db_session.add(instance)
+    db_session.commit()
+    return instance
 
 
 def make_routes(app, db, models):
@@ -15,7 +29,7 @@ def make_routes(app, db, models):
                 venue_model.city.label('city'),
                 venue_model.name.label('name'),
                 venue_model.id.label('id'),
-                func.count(show_model.id).label('upcoming_show_count')
+                func.count(func.coalesce(show_model.id, 0)).label('upcoming_show_count')
             ).outerjoin(show_model, venue_model.id == show_model.venue_id
             ).group_by(
                 venue_model.id
@@ -24,13 +38,6 @@ def make_routes(app, db, models):
                 venue_model.city,
                 venue_model.id,
             ).group_by(venue_model.id).all()
-
-        # the upcoming show count is inaccurate, but filtering where the
-        # start_date > now() would exclude any venues from the list which
-        # don't have any upcoming shows
-        # since this count isn't even used on the venues index page, I felt
-        # this was a good compromise to pull a single query instead of an
-        # N+1 query to look up show counts for each venue later
 
         last_city_state = ''
         data = []
@@ -60,13 +67,29 @@ def make_routes(app, db, models):
         # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
         # search for Hop should return "The Musical Hop".
         # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
+        venue_model = models['venue']
+        show_model = models['show']
+
+        results = db.session.query(
+            venue_model.name.label('name'),
+            venue_model.id.label('id'),
+            func.count(func.coalesce(show_model.id, 0)).label('upcoming_show_count')
+        ).filter(
+            venue_model.name.ilike("%" + bleach.clean(request.form['search_term']) + "%")
+        ).outerjoin(show_model, venue_model.id == show_model.venue_id
+                    ).group_by(
+            venue_model.id
+        ).order_by(
+            venue_model.name,
+        ).group_by(venue_model.id).all()
+
         response = {
-            # "count": 1,
-            # "data": [{
-            #     "id": 2,
-            #     "name": "The Dueling Pianos Bar",
-            #     "num_upcoming_shows": 0,
-            # }]
+            "count": len(results),
+            "data": [{
+                "id": venue.id,
+                "name": venue.name,
+                "num_upcoming_shows": venue.upcoming_show_count
+            } for venue in results]
         }
         return render_template('pages/search_venues.html', results=response,
                                search_term=request.form.get('search_term', ''))
@@ -86,15 +109,39 @@ def make_routes(app, db, models):
 
     @app.route('/venues/create', methods=['POST'])
     def create_venue_submission():
-        # TODO: insert form data as a new Venue record in the db, instead
-        # TODO: modify data to be the data object returned from db insertion
+        data = request.form
+        error = False
+        try:
+            venue = models['venue'](
+                name=bleach.clean(data['name']),
+                address=bleach.clean(data['address']),
+                city=bleach.clean(data['city']),
+                state=bleach.clean(data['state']),
+                phone=bleach.clean(data['phone']),
+                facebook_link=bleach.clean(data['facebook_link'])
+            )
+            genres = request.form.getlist('genres')
+            genre_list = []
+            for genre in genres:
+                db_genre = get_or_create_genre(db.session, models['genre'], genre)
+                if db_genre is not None:
+                    genre_list.append(db_genre)
+            venue.genres = genre_list
+            db.session.add(venue)
+            db.session.commit()
+        except:
+            error = True
+            db.session.rollback()
+            print(sys.exc_info())
+            flash('An error occurred. Venue ' + request.form['name'] + ' could not be listed.')
+        finally:
+            db.session.close()
 
-        # on successful db insert, flash success
-        flash('Venue ' + request.form['name'] + ' was successfully listed!')
-        # TODO: on unsuccessful db insert, flash an error instead.
-        # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
-        # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-        return render_template('pages/home.html')
+        if error:
+            return render_template('pages/home.html')
+        else:
+            flash('Venue ' + request.form['name'] + ' was successfully listed!')
+            return render_template('pages/venues.html')
 
     @app.route('/venues/<venue_id>', methods=['DELETE'])
     def delete_venue(venue_id):

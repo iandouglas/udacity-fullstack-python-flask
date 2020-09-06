@@ -226,7 +226,13 @@ def format_datetime(value, format='medium'):
 
 app.jinja_env.filters['datetime'] = format_datetime
 
-models = {'artist': Artist, 'venue': Venue, 'show': Show}
+models = {
+    'artist': Artist,
+    'venue': Venue,
+    'show': Show,
+    'genre': Genre,
+    'venue_genres': venue_genres
+}
 # ----------------------------------------------------------------------------#
 # Controllers.
 # ----------------------------------------------------------------------------#
