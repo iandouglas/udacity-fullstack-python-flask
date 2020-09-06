@@ -1,13 +1,13 @@
 from sqlalchemy import func
 
 
-def add_or_get_genre_objects(db_session, genre_model, genre_list):
-    genre_list = []
-    for genre in genre_list:
+def add_or_get_genre_objects(db_session, genre_model, form_genre_list):
+    genre_objects = []
+    for genre in form_genre_list:
         db_genre = get_or_create_genre(db_session, genre_model, genre)
         if db_genre is not None:
-            genre_list.append(db_genre)
-    return genre_list
+            genre_objects.append(db_genre)
+    return genre_objects
 
 
 def get_or_create_genre(db_session, genre_model, genre_name):

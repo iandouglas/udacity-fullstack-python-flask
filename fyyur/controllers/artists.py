@@ -2,7 +2,6 @@ import sys
 
 from flask import render_template, flash, request, redirect, url_for
 from forms import *
-from sqlalchemy.sql import func
 import bleach
 
 from .utils import entity_search, add_or_get_genre_objects
@@ -15,7 +14,9 @@ def make_routes(app, db, models):
         data = db.session.query(
                 artist_model.id.label('id'),
                 artist_model.name.label('name')
-            ).order_by(artist_model.id).all()
+            ).order_by(
+                artist_model.name
+            ).all()
         return render_template('pages/artists.html', artists=data)
 
     @app.route('/artists/search', methods=['POST'])
@@ -79,7 +80,11 @@ def make_routes(app, db, models):
                 facebook_link=bleach.clean(data['facebook_link'])
             )
 
-            genre_list = add_or_get_genre_objects(db.session, models['genre'], request.form.getlist('genres'))
+            genre_list = add_or_get_genre_objects(
+                db.session,
+                models['genre'],
+                request.form.getlist('genres')
+            )
             artist.genres = genre_list
             db.session.add(artist)
             db.session.commit()

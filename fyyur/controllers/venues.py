@@ -2,8 +2,7 @@ import sys
 
 from flask import render_template, flash, request, redirect, url_for, abort
 from forms import *
-from datetime import datetime
-from sqlalchemy.sql import func, ClauseElement
+from sqlalchemy.sql import func
 import bleach
 
 from .utils import entity_search, add_or_get_genre_objects
@@ -27,8 +26,10 @@ def make_routes(app, db, models):
             ).order_by(
                 venue_model.state,
                 venue_model.city,
-                venue_model.id,
-            ).group_by(venue_model.id).all()
+                venue_model.name,
+            ).group_by(
+                venue_model.id
+            ).all()
 
         last_city_state = ''
         data = []
@@ -89,7 +90,11 @@ def make_routes(app, db, models):
                 facebook_link=bleach.clean(data['facebook_link'])
             )
 
-            genre_list = add_or_get_genre_objects(db.session, models['genre'], request.form.getlist('genres'))
+            genre_list = add_or_get_genre_objects(
+                db.session,
+                models['genre'],
+                request.form.getlist('genres')
+            )
             venue.genres = genre_list
             db.session.add(venue)
             db.session.commit()
