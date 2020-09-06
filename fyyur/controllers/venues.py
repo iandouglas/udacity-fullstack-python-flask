@@ -6,7 +6,7 @@ from datetime import datetime
 from sqlalchemy.sql import func, ClauseElement
 import bleach
 
-from .utils import get_or_create_genre, entity_search
+from .utils import entity_search, add_or_get_genre_objects
 
 
 def make_routes(app, db, models):
@@ -88,12 +88,8 @@ def make_routes(app, db, models):
                 phone=bleach.clean(data['phone']),
                 facebook_link=bleach.clean(data['facebook_link'])
             )
-            genres = request.form.getlist('genres')
-            genre_list = []
-            for genre in genres:
-                db_genre = get_or_create_genre(db.session, models['genre'], genre)
-                if db_genre is not None:
-                    genre_list.append(db_genre)
+
+            genre_list = add_or_get_genre_objects(db.session, models['genre'], request.form.getlist('genres'))
             venue.genres = genre_list
             db.session.add(venue)
             db.session.commit()

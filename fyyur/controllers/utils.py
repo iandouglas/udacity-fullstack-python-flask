@@ -1,6 +1,15 @@
 from sqlalchemy import func
 
 
+def add_or_get_genre_objects(db_session, genre_model, genre_list):
+    genre_list = []
+    for genre in genre_list:
+        db_genre = get_or_create_genre(db_session, genre_model, genre)
+        if db_genre is not None:
+            genre_list.append(db_genre)
+    return genre_list
+
+
 def get_or_create_genre(db_session, genre_model, genre_name):
     instance = db_session.query(genre_model).filter_by(name=genre_name).first()
     if instance:
