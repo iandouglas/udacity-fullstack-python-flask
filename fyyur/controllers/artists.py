@@ -1,6 +1,11 @@
+import sys
+
 from flask import render_template, flash, request, redirect, url_for
 from forms import *
 from sqlalchemy.sql import func
+import bleach
+
+from .utils import get_or_create_genre
 
 
 def make_routes(app, db, models):
@@ -68,12 +73,36 @@ def make_routes(app, db, models):
 
     @app.route('/artists/create', methods=['POST'])
     def create_artist_submission():
-        # called upon submitting the new artist listing form
-        # TODO: insert form data as a new Venue record in the db, instead
-        # TODO: modify data to be the data object returned from db insertion
+        data = request.form
+        error = False
+        try:
+            artist = models['artist'](
+                name=bleach.clean(data['name']),
+                city=bleach.clean(data['city']),
+                state=bleach.clean(data['state']),
+                phone=bleach.clean(data['phone']),
+                facebook_link=bleach.clean(data['facebook_link'])
+            )
+            genres = request.form.getlist('genres')
+            genre_list = []
+            for genre in genres:
+                db_genre = get_or_create_genre(db.session, models['genre'], genre)
+                if db_genre is not None:
+                    genre_list.append(db_genre)
+            artist.genres = genre_list
+            db.session.add(artist)
+            db.session.commit()
+        except:
+            error = True
+            db.session.rollback()
+            print(sys.exc_info())
+            flash('An error occurred. Artist ' + request.form['name'] + ' could not be created.')
+        finally:
+            db.session.close()
 
-        # on successful db insert, flash success
-        flash('Artist ' + request.form['name'] + ' was successfully listed!')
-        # TODO: on unsuccessful db insert, flash an error instead.
-        # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
-        return render_template('pages/home.html')
+        if error:
+            return render_template('pages/home.html')
+        else:
+            flash('Artist ' + request.form['name'] + ' was successfully listed!')
+            return redirect(url_for('artists'))
+
