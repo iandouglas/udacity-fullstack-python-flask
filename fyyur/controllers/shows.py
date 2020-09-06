@@ -1,4 +1,7 @@
-from flask import render_template, flash
+import sys
+
+import bleach
+from flask import render_template, flash, request, url_for, redirect
 from forms import *
 from sqlalchemy.sql import func
 
@@ -25,18 +28,32 @@ def make_routes(app, db, models):
     @app.route('/shows/create')
     def create_shows():
         # renders form. do not touch.
+        artist_model = models['artist']
+        venue_model = models['venue']
         form = ShowForm()
+        form.artist.choices = [(a.id, a.name) for a in artist_model.query.order_by(artist_model.name)]
+        form.venue.choices = [(v.id, v.name) for v in venue_model.query.order_by(venue_model.name)]
         return render_template('forms/new_show.html', form=form)
 
     @app.route('/shows/create', methods=['POST'])
     def create_show_submission():
-        # called to create new shows in the db, upon submitting new show listing form
-        # TODO: insert form data as a new Show record in the db, instead
-
-        # on successful db insert, flash success
-        flash('Show was successfully listed!')
-        # TODO: on unsuccessful db insert, flash an error instead.
-        # e.g., flash('An error occurred. Show could not be listed.')
-        # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-        return render_template('pages/home.html')
+        try:
+            artist = db.session.query(models['artist']).get(bleach.clean(request.form['artist']))
+            venue = db.session.query(models['venue']).get(bleach.clean(request.form['venue']))
+            show = models['show'](
+                start_time=bleach.clean(request.form['start_time']),
+                venue_id=venue.id,
+                artist_id=artist.id
+            )
+            db.session.add(show)
+            db.session.commit()
+            flash('Show was successfully listed!')
+        except:
+            db.session.rollback()
+            flash('An error occurred. Show could not be listed.')
+            print(sys.exc_info())
+            return redirect(url_for('create_shows'))
+        finally:
+            db.session.close()
+        return redirect(url_for('shows'))
 
