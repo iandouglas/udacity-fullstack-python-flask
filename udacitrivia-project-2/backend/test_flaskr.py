@@ -48,10 +48,11 @@ class TriviaTestCase(unittest.TestCase):
         # TODO set up categories
         response = self.client().get('/categories')
 
-        self.assertEqual(200, response.status)
+        self.assertEqual('200 OK', response.status)
         data = json.loads(response.data.decode('utf-8'))
-        self.assertIs(data, list)
-        self.assertEquals(3, len(data['results']))
+        self.assertIn('categories', data)
+        self.assertEqual(data['categories'].__class__, list)
+        self.assertEqual(3, len(data['categories']))
 
 # Make the tests conveniently executable
 if __name__ == "__main__":

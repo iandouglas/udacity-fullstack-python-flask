@@ -25,6 +25,10 @@ def create_app(test_config=None):
     # TODO Create an endpoint to handle GET requests for all available categories.
     # ./src/components/FormView.js:20:      url: `/categories`, //TODO: update request URL
     # looks for result.categories
+    @app.route('/categories', methods=['GET'])
+    def get_categories():
+        return jsonify({'categories': []})
+
 
     # TODO
     '''
