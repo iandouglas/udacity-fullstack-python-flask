@@ -6,7 +6,7 @@ from datetime import datetime
 from sqlalchemy.sql import func, ClauseElement
 import bleach
 
-from .utils import get_or_create_genre
+from .utils import get_or_create_genre, entity_search
 
 
 def make_routes(app, db, models):
@@ -55,33 +55,13 @@ def make_routes(app, db, models):
 
     @app.route('/venues/search', methods=['POST'])
     def search_venues():
-        # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
-        # search for Hop should return "The Musical Hop".
-        # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
-        venue_model = models['venue']
-        show_model = models['show']
+        response = entity_search(
+            db.session,
+            models['venue'],
+            models['show'],
+            bleach.clean(request.form['search_term'])
+        )
 
-        results = db.session.query(
-            venue_model.name.label('name'),
-            venue_model.id.label('id'),
-            func.count(func.coalesce(show_model.id, 0)).label('upcoming_show_count')
-        ).filter(
-            venue_model.name.ilike("%" + bleach.clean(request.form['search_term']) + "%")
-        ).outerjoin(show_model, venue_model.id == show_model.venue_id
-                    ).group_by(
-            venue_model.id
-        ).order_by(
-            venue_model.name,
-        ).group_by(venue_model.id).all()
-
-        response = {
-            "count": len(results),
-            "data": [{
-                "id": venue.id,
-                "name": venue.name,
-                "num_upcoming_shows": venue.upcoming_show_count
-            } for venue in results]
-        }
         return render_template('pages/search_venues.html', results=response,
                                search_term=request.form.get('search_term', ''))
 
