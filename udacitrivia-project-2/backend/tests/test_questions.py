@@ -24,8 +24,13 @@ def test_get_paginated_questions_page_1(client):
         assert 19 == data['total_questions']
 
         assert 'categories' in data
-        assert data['categories'].__class__ == list
+        assert data['categories'].__class__ == dict
         assert 6 == len(data['categories'])
+        categories = data['categories']
+        assert '1' in categories
+        assert categories['1'] == 'Science'
+        assert '6' in categories
+        assert categories['6'] == 'Sports'
 
         assert 'current_category' in data
         assert data['current_category'] is None

@@ -6,6 +6,7 @@ from flaskr.models import Question
 
 QUESTIONS_PER_PAGE = 10
 
+
 class Questions(Resource):
     def get(self):
         page = request.args.get("page", 1, type=int)
@@ -17,10 +18,11 @@ class Questions(Resource):
             ).limit(
                 QUESTIONS_PER_PAGE
             ).all()
+
         return {
             'questions': [question.format() for question in results],
             'total_questions': total_count,
-            'categories': get_all_categories()['categories'],
+            'categories': {category['id']: category['type'] for category in get_all_categories()['categories']},
             'current_category': None
         }
 
