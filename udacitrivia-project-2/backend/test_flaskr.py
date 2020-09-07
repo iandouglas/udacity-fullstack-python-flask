@@ -52,7 +52,18 @@ class TriviaTestCase(unittest.TestCase):
         data = json.loads(response.data.decode('utf-8'))
         self.assertIn('categories', data)
         self.assertEqual(data['categories'].__class__, list)
-        self.assertEqual(3, len(data['categories']))
+        self.assertEqual(6, len(data['categories']))
+
+        first_category = data['categories'][0]
+        self.assertEqual(first_category.__class__, dict)
+
+        self.assertIn('id', first_category)
+        self.assertEqual(first_category['id'].__class__, int)
+        self.assertEqual(2, first_category['id'])
+
+        self.assertIn('type', first_category)
+        self.assertEqual(first_category['type'].__class__, str)
+        self.assertEqual('Art', first_category['type'])
 
 # Make the tests conveniently executable
 if __name__ == "__main__":

@@ -36,10 +36,10 @@ def index():
 @app.route('/lists/<list_id>')
 def list_index(list_id):
   return render_template('index.html', 
-  lists=TodoList.query.order_by('name').all(),
-  active_list=TodoList.query.get(list_id),
-  todos=Todo.query.filter_by(list_id=list_id).order_by('id').all(),
-)
+    lists=TodoList.query.order_by('name').all(),
+    active_list=TodoList.query.get(list_id),
+    todos=Todo.query.filter_by(list_id=list_id).order_by('id').all(),
+  )
 
 @app.route('/todos/<todo_id>/set-completed', methods=['POST'])
 def change_todo(todo_id):
