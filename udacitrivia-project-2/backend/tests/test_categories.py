@@ -1,13 +1,32 @@
 import json
 
+import pytest
+import sqlalchemy
+from sqlalchemy.dialects.postgresql import psycopg2
+from sqlalchemy.exc import IntegrityError
+
 from models import Category
 
 
-def test_category_creation(client):
+def test_category_creation(db_session):
     cat = Category(type='Fancy')
 
     assert cat.id is None
     assert cat.type == 'Fancy'
+
+
+def test_category_uniqueness_on_type(db_session):
+    cat_2 = None
+    try:
+        cat_2 = Category(type='Art')
+        db_session.add(cat_2)
+        db_session.commit()
+    except IntegrityError as e:
+        assert True is True
+    finally:
+        if cat_2.id is not None:
+            assert True is False, 'we should not be here!!'
+            Category.query.filter_by(id=cat_2.id).delete()
 
 
 def test_category_format(client):

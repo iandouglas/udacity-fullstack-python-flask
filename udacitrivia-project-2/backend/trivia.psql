@@ -24,9 +24,12 @@ SET default_with_oids = false;
 -- Name: categories; Type: TABLE; Schema: public; Owner: caryn
 --
 
+drop table public.questions;
+drop table public.categories;
+
 CREATE TABLE public.categories (
     id integer NOT NULL,
-    type text
+    type text UNIQUE
 );
 
 

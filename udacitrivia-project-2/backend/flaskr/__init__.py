@@ -127,4 +127,4 @@ def create_app(test_config=None):
     '''
 
     api.add_resource(Categories, '/categories')
-    return app, db
+    return app
