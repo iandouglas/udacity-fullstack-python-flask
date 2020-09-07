@@ -1,13 +1,9 @@
-import os
-import sys
-
-from flask import Flask, request, abort, jsonify, flash
-from flask_restful import Resource, Api
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, g
+from flask_restful import Api, Resource
 from flask_cors import CORS
-import random
 
-from models import setup_db, Question, Category
+from flaskr.resources.categories import Categories
+from models import setup_db, Category
 
 QUESTIONS_PER_PAGE = 10
 
@@ -16,7 +12,7 @@ def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__)
     api = Api(app)
-    db = setup_db(app)
+    db = setup_db(app, test_config == 'testing')
 
     CORS(app, resources={r"/*": {"origins": "*"}})
 
@@ -29,16 +25,16 @@ def create_app(test_config=None):
     # TODO Create an endpoint to handle GET requests for all available categories.
     # ./src/components/FormView.js:20:      url: `/categories`, //TODO: update request URL
     # looks for result.categories
-    class CategoriesResource(Resource):
-        def get(self):
-            results = []
-            try:
-                results = Category.query.order_by(Category.type).all()
-            except:
-                print(sys.exc_info())
-            finally:
-                db.session.close()
-            return {'categories': [category.format() for category in results]}
+    # class CategoriesResource(Resource):
+    #     def get(self):
+    #         results = []
+    #         try:
+    #             results = Category.query.order_by(Category.type).all()
+    #         except:
+    #             print(sys.exc_info())
+    #         finally:
+    #             db.session.close()
+    #         return {'categories': [category.format() for category in results]}
 
 
     # TODO
@@ -130,5 +126,5 @@ def create_app(test_config=None):
     including 404 and 422. 
     '''
 
-    api.add_resource(CategoriesResource, '/categories')
-    return app
+    api.add_resource(Categories, '/categories')
+    return app, db
