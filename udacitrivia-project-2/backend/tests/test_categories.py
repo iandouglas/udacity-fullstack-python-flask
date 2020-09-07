@@ -1,8 +1,7 @@
 import json
 
 from sqlalchemy.exc import IntegrityError
-
-from models import Category
+from flaskr import Category
 
 
 def test_category_creation(db_session):

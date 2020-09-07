@@ -2,7 +2,7 @@ import pytest
 from flask_sqlalchemy import SQLAlchemy
 
 from flaskr import create_app, g
-from models import setup_db
+from flaskr.models import setup_db
 
 
 @pytest.fixture(scope='session')

@@ -2,7 +2,7 @@ from flask_restful import Resource
 from flask import request
 
 from flaskr.resources.categories import get_all_categories
-from models import Question
+from flaskr.models import Question
 
 QUESTIONS_PER_PAGE = 10
 

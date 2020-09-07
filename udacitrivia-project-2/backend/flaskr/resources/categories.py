@@ -1,6 +1,5 @@
-import sys
 from flask_restful import Resource
-from models import Category
+from flaskr.models import Category
 
 
 def get_all_categories():

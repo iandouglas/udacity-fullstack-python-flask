@@ -1,10 +1,10 @@
 from flask import Flask, g
-from flask_restful import Api, Resource
+from flask_restful import Api
 from flask_cors import CORS
 
 from flaskr.resources.categories import Categories
 from flaskr.resources.questions import Questions
-from models import setup_db, Category
+from flaskr.models import setup_db, Category
 
 QUESTIONS_PER_PAGE = 10
 

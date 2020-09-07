@@ -1,5 +1,5 @@
 import json
-from models import Question, Category
+from flaskr.models import Question
 
 
 def test_get_paginated_questions_page_1(client):
@@ -76,11 +76,28 @@ def test_get_paginated_questions_page_2_and_3(client):
             first_question = data['questions'][0]
             assert first_question['question'] == "The Taj Mahal is located in which Indian city?"
 
-'''
-2. Create an endpoint to DELETE question using a question ID. 
-  
-./src/components/QuestionView.js:108:          url: `/questions/${id}`, //TODO: update request URL
-'''
+
+def test_delete_a_question(client, db_session):
+    """
+    2. Create an endpoint to DELETE question using a question ID.
+
+    ./src/components/QuestionView.js:108:          url: `/questions/${id}`
+    """
+
+    assert db_session.query(Question).count() == 19
+
+    category_id = 5  # entertainment
+    new_q = Question(question="test question", answer="answer", category=str(category_id), difficulty=1)
+    db_session.add(new_q)
+    db_session.commit()
+
+    new_count = db_session.query(Question).count()
+    assert new_count == 20
+
+    response = client.delete('/questions/{id}'.format(id=new_q.id))
+    assert response.status == 204
+
+    assert db_session.query(Question).count() == 19
 
 '''
 3. Create an endpoint to POST a new question,  which will require the question and answer text, category, and difficulty score.
