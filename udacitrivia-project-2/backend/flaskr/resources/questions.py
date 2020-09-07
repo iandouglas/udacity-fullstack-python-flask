@@ -7,7 +7,7 @@ from flaskr.models import Question
 QUESTIONS_PER_PAGE = 10
 
 
-class Questions(Resource):
+class QuestionsResource(Resource):
     def get(self):
         page = request.args.get("page", 1, type=int)
         total_count = Question.query.count()
@@ -25,4 +25,9 @@ class Questions(Resource):
             'categories': {category['id']: category['type'] for category in get_all_categories()['categories']},
             'current_category': None
         }
+
+
+class QuestionResource(Resource):
+    def delete(self):
+        pass
 
