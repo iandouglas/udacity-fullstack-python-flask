@@ -3,6 +3,7 @@ from flask_restful import Api, Resource
 from flask_cors import CORS
 
 from flaskr.resources.categories import Categories
+from flaskr.resources.questions import Questions
 from models import setup_db, Category
 
 QUESTIONS_PER_PAGE = 10
@@ -21,21 +22,6 @@ def create_app(test_config=None):
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
         response.headers.add('Access-Control-Allow-Methods', 'GET, PATCH, POST, DELETE, OPTIONS')
         return response
-
-    # TODO Create an endpoint to handle GET requests for all available categories.
-    # ./src/components/FormView.js:20:      url: `/categories`, //TODO: update request URL
-    # looks for result.categories
-    # class CategoriesResource(Resource):
-    #     def get(self):
-    #         results = []
-    #         try:
-    #             results = Category.query.order_by(Category.type).all()
-    #         except:
-    #             print(sys.exc_info())
-    #         finally:
-    #             db.session.close()
-    #         return {'categories': [category.format() for category in results]}
-
 
     # TODO
     '''
@@ -127,4 +113,5 @@ def create_app(test_config=None):
     '''
 
     api.add_resource(Categories, '/categories')
+    api.add_resource(Questions, '/questions')
     return app

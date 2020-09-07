@@ -21,7 +21,7 @@ def test_get_paginated_questions_page_1(client):
 
         assert 'total_questions' in data
         assert data['total_questions'].__class__ == int
-        assert 10 == len(data['total_questions'])
+        assert 19 == data['total_questions']
 
         assert 'categories' in data
         assert data['categories'].__class__ == list
@@ -38,17 +38,43 @@ def test_get_paginated_questions_page_1(client):
         assert first_question.__class__ == dict
         assert 'question' in first_question
         assert first_question['question'].__class__ == str
-        assert first_question['question'] == "Whose autobiography is entitled 'I Know Why the Caged Bird Sings'?"
+        assert first_question['question'] == "What movie earned Tom Hanks his third straight Oscar nomination, in 1996?"
         assert 'answer' in first_question
         assert first_question['answer'].__class__ == str
-        assert first_question['answer'] == 'Maya Angelou'
+        assert first_question['answer'] == 'Apollo 13'
         assert 'category' in first_question
-        assert first_question['category'].__class__ == str
-        assert first_question['category'] == 'History'
+        assert first_question['category'].__class__ == int
+        assert first_question['category'] == 5
         assert 'difficulty' in first_question
         assert first_question['difficulty'].__class__ == int
-        assert first_question['difficulty'] == 2
+        assert first_question['difficulty'] == 4
 
+
+def test_get_paginated_questions_page_2_and_3(client):
+    """
+    test getting page 2, and page 3 should have no results
+    """
+    for path in ['/questions?page=2', '/questions?page=3']:
+        response = client.get(path)
+
+        assert '200 OK' == response.status
+        data = json.loads(response.data.decode('utf-8'))
+
+        assert 'total_questions' in data
+        assert data['total_questions'].__class__ == int
+        assert 19 == data['total_questions']
+
+        assert 'questions' in data
+        assert data['questions'].__class__ == list
+
+        if path[-1] == '3':
+            assert 0 == len(data['questions'])
+
+        if path[-1] == '2':
+            assert 9 == len(data['questions'])
+
+            first_question = data['questions'][0]
+            assert first_question['question'] == "The Taj Mahal is located in which Indian city?"
 
 '''
 2. Create an endpoint to DELETE question using a question ID. 

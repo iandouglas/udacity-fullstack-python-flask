@@ -100,6 +100,6 @@ psql trivia_test < trivia.psql
 pip install pytest
 coverage run --omit=venv -m pytest
 coverage html
-open coverage/index.html
+open htmlcov/index.html
 
 ```
