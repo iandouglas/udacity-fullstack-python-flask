@@ -1,8 +1,5 @@
 import json
 
-import pytest
-import sqlalchemy
-from sqlalchemy.dialects.postgresql import psycopg2
 from sqlalchemy.exc import IntegrityError
 
 from models import Category
@@ -29,11 +26,16 @@ def test_category_uniqueness_on_type(db_session):
             Category.query.filter_by(id=cat_2.id).delete()
 
 
-def test_category_format(client):
+def test_category_format(db_session):
     cat_format = Category(type='Fancy').format()
 
     assert cat_format['id'] is None
     assert cat_format['type'] == 'Fancy'
+
+    cat = Category.query.filter_by(type='Art').one().format()
+
+    assert cat['id'] is 2
+    assert cat['type'] == 'Art'
 
 
 def test_get_categories_happypath(client):
