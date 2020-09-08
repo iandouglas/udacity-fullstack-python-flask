@@ -19,6 +19,8 @@ class Question(db.Model):
         self.answer = answer
         self.category = category
         self.difficulty = difficulty
+        if id is not None:
+            self.id = id
 
     def insert(self):
         db.session.add(self)
@@ -52,6 +54,8 @@ class Category(db.Model):
 
     def __init__(self, type, id=None):
         self.type = type
+        if id is not None:
+            self.id = id
 
     def format(self):
         return {

@@ -22,10 +22,11 @@ def create_app(config_name='default'):
         return response
 
     # putting flask-restful resource imports here to avoid circular dependencies
-    from flaskr.resources.categories import CategoriesResource
+    from flaskr.resources.categories import CategoriesResource, CategoryQuestionsResource
     from flaskr.resources.questions import QuestionsResource, QuestionResource
 
     api.add_resource(CategoriesResource, '/categories')
+    api.add_resource(CategoryQuestionsResource, '/categories/<int:id>/questions')
     api.add_resource(QuestionsResource, '/questions')
     api.add_resource(QuestionResource, '/questions/<int:id>')
 

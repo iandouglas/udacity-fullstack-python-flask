@@ -1,7 +1,6 @@
 from sqlalchemy import MetaData, ForeignKeyConstraint, Table
 from sqlalchemy.engine import reflection
 from sqlalchemy.sql.ddl import DropConstraint, DropTable
-
 from flaskr.models import Question, Category
 
 
@@ -47,6 +46,7 @@ def seed_data(db):
     db.session.add(cat_5)
     cat_6 = Category(id=6, type='Sports')
     db.session.add(cat_6)
+    db.session.execute("SELECT pg_catalog.setval('public.categories_id_seq', 6, true);")
     db.session.commit()
 
     q_2 = Question(id=2, question="What movie earned Tom Hanks his third straight Oscar nomination, in 1996?", answer="Apollo 13", difficulty=4, category=5)
@@ -87,6 +87,7 @@ def seed_data(db):
     db.session.add(q_22)
     q_23 = Question(id=23, question="Which dung beetle was worshipped by the ancient Egyptians?", answer="Scarab", difficulty=4, category=4)
     db.session.add(q_23)
+    db.session.execute("SELECT pg_catalog.setval('public.questions_id_seq', 23, true);")
 
     db.session.commit()
 
