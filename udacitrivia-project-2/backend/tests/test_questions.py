@@ -118,14 +118,52 @@ class QuestionsTest(unittest.TestCase):
 
     def test_delete_a_question_sadpath_404(self):
         response = self.client.delete('/questions/0')
-        data = json.loads(response.data.decode('utf-8'))
-
         self.assertEqual(response.status_code, 404)
 
+        data = json.loads(response.data.decode('utf-8'))
         self.assertIn('message', data)
         self.assertIsInstance(data['message'], str)
         self.assertEqual(data['message'], 'Resource not found')
 
+    def test_create_new_question_happypath(self):
+        my_question = 'this is my question'
+        my_answer = 'this is my answer'
+        my_difficulty = '4'
+        my_category = '2'
+        data = {
+            'question': my_question,
+            'answer': my_answer,
+            'difficulty': my_difficulty,
+            'category': my_category
+        }
+        response = self.client.post('/questions')
+        self.assertEqual(200, response.status_code)
+
+        data = json.loads(response.data.decode('utf-8'))
+        self.assertIn('message', data)
+        self.assertIsInstance(data['message'], str)
+        self.assertEqual(data['message'], 'New question successfully added')
+        self.assertIn('question', data)
+        self.assertIsInstance(data['question'], dict)
+        q = data['question']
+        self.assertIn('question', q)
+        self.assertIsInstance(q['question'], str)
+        self.assertEqual(q['question'], my_question)
+        self.assertIn('answer', q)
+        self.assertIsInstance(q['answer'], str)
+        self.assertEqual(q['answer'], my_answer)
+        self.assertIn('difficulty', q)
+        self.assertIsInstance(q['difficulty'], str)
+        self.assertEqual(q['difficulty'], my_difficulty)
+        self.assertIn('category', q)
+        self.assertIsInstance(q['category'], str)
+        self.assertEqual(q['category'], my_category)
+
+    def test_create_new_question_sadpath_missing_params(self):
+        pass
+
+    def test_create_new_question_sadpath_bad_params(self):
+        pass
 
     '''
     3. Create an endpoint to POST a new question,  which will require the question and answer text, category, and difficulty score.
