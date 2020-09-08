@@ -1,13 +1,8 @@
 from flask_restful import Resource
-from flaskr.models import Category
+from flaskr.resources import get_all_categories
 
 
-def get_all_categories():
-    results = Category.query.order_by(Category.type).all()
-    return {'categories': [category.format() for category in results]}
-
-
-class Categories(Resource):
+class CategoriesResource(Resource):
     def get(self):
         return get_all_categories()
 

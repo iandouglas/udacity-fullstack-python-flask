@@ -1,10 +1,9 @@
 from flask_restful import Resource
-from flask import request
-
-from flaskr.resources.categories import get_all_categories
+from flask import request, abort, current_app
+from sqlalchemy.orm.exc import NoResultFound
+from flaskr import db
+from flaskr.resources import get_all_categories
 from flaskr.models import Question
-
-QUESTIONS_PER_PAGE = 10
 
 
 class QuestionsResource(Resource):
@@ -14,9 +13,9 @@ class QuestionsResource(Resource):
         results = Question.query.order_by(
                 Question.id
             ).offset(
-                QUESTIONS_PER_PAGE * (page-1)
+                current_app.config['FLASKY_QUESTIONS_PER_PAGE'] * (page-1)
             ).limit(
-                QUESTIONS_PER_PAGE
+                current_app.config['FLASKY_QUESTIONS_PER_PAGE']
             ).all()
 
         return {
@@ -28,6 +27,11 @@ class QuestionsResource(Resource):
 
 
 class QuestionResource(Resource):
-    def delete(self):
-        pass
+    def delete(self, id):
+        try:
+            question = db.session.query(Question).filter_by(id=id).one()
+        except NoResultFound:
+            return abort(404, 'Resource not found')
+        question.delete()
+        return {}, 204
 

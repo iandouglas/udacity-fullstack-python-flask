@@ -2,5 +2,5 @@ pip
 .idea
 __pycache__
 .coverage
-htmlcov
+coverage_html_report
 venv

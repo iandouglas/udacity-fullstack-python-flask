@@ -1,138 +1,161 @@
 import json
+import unittest
+from flaskr import create_app, db
 from flaskr.models import Question
+from tests import db_drop_everything, seed_data
 
 
-def test_get_paginated_questions_page_1(client):
-    """
-    1. Create an endpoint to handle GET requests for questions,
-    including pagination (every 10 questions).
+class QuestionsTest(unittest.TestCase):
+    def setUp(self):
+        self.app = create_app('testing')
+        self.app_context = self.app.app_context()
+        self.app_context.push()
+        db.create_all()
+        seed_data(db)
+        self.client = self.app.test_client()
 
-    /questions?page=${this.state.page}
-    expects result.questions, result.total_questions, result.categories, result.current_category
+    def tearDown(self):
+        db.session.remove()
+        db_drop_everything(db)
+        self.app_context.pop()
 
-    according to https://knowledge.udacity.com/questions/281844 we can ignore current_category and set it to null/None
-    """
+    def test_get_paginated_questions_page_1(self):
+        """
+        1. Create an endpoint to handle GET requests for questions,
+        including pagination (every 10 questions).
 
-    for path in ['/questions', '/questions?page=1']:
-        response = client.get(path)
+        /questions?page=${this.state.page}
+        expects result.questions, result.total_questions, result.categories, result.current_category
 
-        assert '200 OK' == response.status
-        data = json.loads(response.data.decode('utf-8'))
+        according to https://knowledge.udacity.com/questions/281844 we can ignore current_category and set it to null/None
+        """
 
-        assert 'total_questions' in data
-        assert data['total_questions'].__class__ == int
-        assert 19 == data['total_questions']
+        for path in ['/questions', '/questions?page=1']:
+            response = self.client.get(path)
 
-        assert 'categories' in data
-        assert data['categories'].__class__ == dict
-        assert 6 == len(data['categories'])
-        categories = data['categories']
-        assert '1' in categories
-        assert categories['1'] == 'Science'
-        assert '6' in categories
-        assert categories['6'] == 'Sports'
+            self.assertEqual(response.status_code, 200)
+            data = json.loads(response.data.decode('utf-8'))
 
-        assert 'current_category' in data
-        assert data['current_category'] is None
+            self.assertIn('total_questions', data)
+            self.assertIsInstance(data['total_questions'], int)
+            self.assertEqual(19, data['total_questions'])
 
-        assert 'questions' in data
-        assert data['questions'].__class__ == list
-        assert 10 == len(data['questions'])
+            self.assertIn('categories', data)
+            self.assertIsInstance(data['categories'], dict)
+            self.assertEqual(6, len(data['categories']))
+            categories = data['categories']
+            self.assertIn('1', categories)
+            self.assertEqual(categories['1'], 'Science')
+            self.assertIn('6', categories)
+            self.assertEqual(categories['6'], 'Sports')
 
-        first_question = data['questions'][0]
-        assert first_question.__class__ == dict
-        assert 'question' in first_question
-        assert first_question['question'].__class__ == str
-        assert first_question['question'] == "What movie earned Tom Hanks his third straight Oscar nomination, in 1996?"
-        assert 'answer' in first_question
-        assert first_question['answer'].__class__ == str
-        assert first_question['answer'] == 'Apollo 13'
-        assert 'category' in first_question
-        assert first_question['category'].__class__ == int
-        assert first_question['category'] == 5
-        assert 'difficulty' in first_question
-        assert first_question['difficulty'].__class__ == int
-        assert first_question['difficulty'] == 4
+            self.assertIn('current_category', data)
+            assert data['current_category'] is None
 
-
-def test_get_paginated_questions_page_2_and_3(client):
-    """
-    test getting page 2, and page 3 should have no results
-    """
-    for path in ['/questions?page=2', '/questions?page=3']:
-        response = client.get(path)
-
-        assert '200 OK' == response.status
-        data = json.loads(response.data.decode('utf-8'))
-
-        assert 'total_questions' in data
-        assert data['total_questions'].__class__ == int
-        assert 19 == data['total_questions']
-
-        assert 'questions' in data
-        assert data['questions'].__class__ == list
-
-        if path[-1] == '3':
-            assert 0 == len(data['questions'])
-
-        if path[-1] == '2':
-            assert 9 == len(data['questions'])
+            self.assertIn('questions', data)
+            self.assertIsInstance(data['questions'], list)
+            self.assertEqual(10, len(data['questions']))
 
             first_question = data['questions'][0]
-            assert first_question['question'] == "The Taj Mahal is located in which Indian city?"
+            self.assertIsInstance(first_question, dict)
+            self.assertIn('question', first_question)
+            self.assertIsInstance(first_question['question'], str)
+            self.assertEqual(first_question['question'], "What movie earned Tom Hanks his third straight Oscar nomination, in 1996?")
+            self.assertIn('answer', first_question)
+            self.assertIsInstance(first_question['answer'], str)
+            self.assertEqual(first_question['answer'], 'Apollo 13')
+            self.assertIn('category', first_question)
+            self.assertIsInstance(first_question['category'], str)
+            self.assertEqual(first_question['category'], '5')
+            self.assertIn('difficulty', first_question)
+            self.assertIsInstance(first_question['difficulty'], int)
+            self.assertEqual(first_question['difficulty'], 4)
 
 
-def test_delete_a_question(client, db_session):
-    """
-    2. Create an endpoint to DELETE question using a question ID.
+    def test_get_paginated_questions_page_2_and_3(self):
+        """
+        test getting page 2, and page 3 should have no results
+        """
+        for path in ['/questions?page=2', '/questions?page=3']:
+            response = self.client.get(path)
 
-    ./src/components/QuestionView.js:108:          url: `/questions/${id}`
-    """
+            self.assertEqual(response.status_code, 200)
+            data = json.loads(response.data.decode('utf-8'))
 
-    assert db_session.query(Question).count() == 19
+            self.assertIn('total_questions', data)
+            self.assertIsInstance(data['total_questions'], int)
+            self.assertEqual(19, data['total_questions'])
 
-    category_id = 5  # entertainment
-    new_q = Question(question="test question", answer="answer", category=str(category_id), difficulty=1)
-    db_session.add(new_q)
-    db_session.commit()
+            self.assertIn('questions', data)
+            self.assertIsInstance(data['questions'], list)
 
-    new_count = db_session.query(Question).count()
-    assert new_count == 20
+            if path[-1] == '3':
+                self.assertEqual(0, len(data['questions']))
 
-    response = client.delete('/questions/{id}'.format(id=new_q.id))
-    assert response.status == 204
+            if path[-1] == '2':
+                self.assertEqual(9, len(data['questions']))
 
-    assert db_session.query(Question).count() == 19
+                first_question = data['questions'][0]
+                self.assertEqual(first_question['question'], "The Taj Mahal is located in which Indian city?")
 
-'''
-3. Create an endpoint to POST a new question,  which will require the question and answer text, category, and difficulty score.
 
-./src/components/FormView.js:37:      url: '/questions', //TODO: update request URL
-sends question, answer, difficulty, category
-'''
+    def test_delete_a_question_happypath(self):
+        """
+        2. Create an endpoint to DELETE question using a question ID.
 
-'''
-4. Create a POST endpoint to get questions based on a search term. It should return any questions for whom the search term is a substring of the question. 
+        ./src/components/QuestionView.js:108:          url: `/questions/${id}`
+        """
+        self.assertEqual(db.session.query(Question).count(), 19)
+        category_id = 5  # entertainment
+        new_q = Question(question="test question", answer="answer", category=str(category_id), difficulty=1)
+        db.session.add(new_q)
+        db.session.commit()
+        self.assertEqual(db.session.query(Question).count(), 20)
 
-./src/components/QuestionView.js:81:      url: `/questions`, //TODO: update request URL
-sends searchTerm
-expects result.questions, result.total_questions, result.current_category
-'''
+        response = self.client.delete('/questions/{id}'.format(id=new_q.id))
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(db.session.query(Question).count(), 19)
 
-'''
-5. Create a GET endpoint to get questions based on category. 
-  
-./src/components/QuestionView.js:63:      url: `/categories/${id}/questions`, //TODO: update request URL
-# looks for result.questions array, result.total_questions, result.current_category
-'''
+    def test_delete_a_question_sadpath_404(self):
+        response = self.client.delete('/questions/0')
+        data = json.loads(response.data.decode('utf-8'))
 
-'''
-6. Create a POST endpoint to get questions to play the quiz. 
-This endpoint should take category and previous question parameters 
-and return a random questions within the given category, 
-if provided, and that is not one of the previous questions. 
+        self.assertEqual(response.status_code, 404)
 
-./src/components/QuizView.js:51:      url: '/quizzes', //TODO: update request URL
-sends previousQuestions, quizCategory
-expects question
-'''
+        self.assertIn('message', data)
+        self.assertIsInstance(data['message'], str)
+        self.assertEqual(data['message'], 'Resource not found')
+
+
+    '''
+    3. Create an endpoint to POST a new question,  which will require the question and answer text, category, and difficulty score.
+    
+    ./src/components/FormView.js:37:      url: '/questions', //TODO: update request URL
+    sends question, answer, difficulty, category
+    '''
+
+    '''
+    4. Create a POST endpoint to get questions based on a search term. It should return any questions for whom the search term is a substring of the question. 
+    
+    ./src/components/QuestionView.js:81:      url: `/questions`, //TODO: update request URL
+    sends searchTerm
+    expects result.questions, result.total_questions, result.current_category
+    '''
+
+    '''
+    5. Create a GET endpoint to get questions based on category. 
+      
+    ./src/components/QuestionView.js:63:      url: `/categories/${id}/questions`, //TODO: update request URL
+    # looks for result.questions array, result.total_questions, result.current_category
+    '''
+
+    '''
+    6. Create a POST endpoint to get questions to play the quiz. 
+    This endpoint should take category and previous question parameters 
+    and return a random questions within the given category, 
+    if provided, and that is not one of the previous questions. 
+    
+    ./src/components/QuizView.js:51:      url: '/quizzes', //TODO: update request URL
+    sends previousQuestions, quizCategory
+    expects question
+    '''
