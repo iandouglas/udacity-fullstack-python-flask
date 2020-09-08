@@ -1,4 +1,4 @@
-from flask import jsonify
+from flask import jsonify, abort
 from flask_restful import Resource
 from flaskr import db
 from flaskr.models import Category, Question
@@ -13,10 +13,10 @@ class CategoriesResource(Resource):
 class CategoryQuestionsResource(Resource):
     def get(self, id):
         category = db.session.query(Category).filter_by(id=id).one_or_none()
-        questions = db.session.query(Question).filter_by(category=str(category.id)).all()
+        if category is None:
+            return abort(404, 'Resource not found')
 
-        # if category is None:
-        #     return error
+        questions = db.session.query(Question).filter_by(category=str(category.id)).all()
         return jsonify({
             'total_questions': len(questions),
             'questions': [question.format() for question in questions],

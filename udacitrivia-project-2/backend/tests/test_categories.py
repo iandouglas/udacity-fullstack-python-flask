@@ -73,7 +73,7 @@ class CategoriesTest(unittest.TestCase):
         self.assertIsInstance(first_category['type'], str)
         self.assertEqual('Art', first_category['type'])
 
-    def test_get_questions_for_category(self):
+    def test_get_questions_for_category_happypath(self):
         category = db.session.query(Category).filter_by(type='Entertainment').one()
         response = self.client.get('/categories/{id}/questions'.format(id=category.id))
 
@@ -109,3 +109,28 @@ class CategoriesTest(unittest.TestCase):
         self.assertIn('difficulty', first_question)
         self.assertIsInstance(first_question['difficulty'], int)
         self.assertEqual(first_question['difficulty'], 4)
+
+    def test_get_questions_for_category_sadpath_bad_id(self):
+        response = self.client.get('/categories/123/questions')
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_get_questions_for_category_sadpath_no_questions(self):
+        category = Category(type='testing', id=21)
+        db.session.add(category)
+        db.session.commit()
+        response = self.client.get('/categories/{id}/questions'.format(id=category.id))
+
+        self.assertEqual(response.status_code, 200)
+        data = json.loads(response.data.decode('utf-8'))
+
+        self.assertIn('total_questions', data)
+        self.assertIsInstance(data['total_questions'], int)
+        self.assertEqual(0, data['total_questions'])
+
+        self.assertIn('current_category', data)
+        self.assertIsNone(data['current_category'])
+
+        self.assertIn('questions', data)
+        self.assertIsInstance(data['questions'], list)
+        self.assertEqual(0, len(data['questions']))

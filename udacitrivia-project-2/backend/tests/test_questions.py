@@ -143,13 +143,6 @@ class QuestionsTest(unittest.TestCase):
     '''
 
     '''
-    5. Create a GET endpoint to get questions based on category. 
-      
-    ./src/components/QuestionView.js:63:      url: `/categories/${id}/questions`, //TODO: update request URL
-    # looks for result.questions array, result.total_questions, result.current_category
-    '''
-
-    '''
     6. Create a POST endpoint to get questions to play the quiz. 
     This endpoint should take category and previous question parameters 
     and return a random questions within the given category, 

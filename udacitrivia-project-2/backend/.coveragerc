@@ -2,12 +2,13 @@
 omit =
     .pytest_cache
     venv/*
+    ../venv/*
 
 [report]
 omit =
     .pytest_cache
     venv/*
-    tests/*
+    ../venv/*
 
 
 ignore_errors = True
