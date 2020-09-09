@@ -11,6 +11,7 @@ class QuestionsTest(unittest.TestCase):
         self.client = self.app.test_client()
         self.app_context = self.app.app_context()
         self.app_context.push()
+        db_drop_everything(db)
         db.create_all()
         seed_data(db)
 

@@ -59,19 +59,14 @@ class CategoriesTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = json.loads(response.data.decode('utf-8'))
         self.assertIn('categories', data)
-        self.assertIsInstance(data['categories'], list)
-        self.assertEqual(6, len(data['categories']))
+        self.assertIsInstance(data['categories'], dict)
+        self.assertEqual(6, len(data['categories'].keys()))
 
-        first_category = data['categories'][0]
-        self.assertIsInstance(first_category, dict)
+        self.assertIn('1', data['categories'])
+        self.assertEqual('Science', data['categories']['1'])
+        self.assertIn('2', data['categories'])
+        self.assertEqual('Art', data['categories']['2'])
 
-        self.assertIn('id', first_category)
-        self.assertIsInstance(first_category['id'], int)
-        self.assertEqual(2, first_category['id'])
-
-        self.assertIn('type', first_category)
-        self.assertIsInstance(first_category['type'], str)
-        self.assertEqual('Art', first_category['type'])
 
     def test_get_questions_for_category_happypath(self):
         category = db.session.query(Category).filter_by(type='Entertainment').one()

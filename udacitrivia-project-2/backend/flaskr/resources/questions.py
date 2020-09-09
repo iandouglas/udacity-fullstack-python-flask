@@ -4,8 +4,7 @@ from flask_restful import Resource
 from flask import request, abort, current_app
 from sqlalchemy.orm.exc import NoResultFound
 from flaskr import db
-from flaskr.resources import get_all_categories
-from flaskr.models import Question
+from flaskr.models import Question, Category
 
 
 class QuestionsResource(Resource):
@@ -20,10 +19,13 @@ class QuestionsResource(Resource):
                 current_app.config['FLASKY_QUESTIONS_PER_PAGE']
             ).all()
 
+        category_results = Category.query.order_by(Category.type).all()
+        categories = {'categories': [category.format() for category in category_results]}
+
         return {
             'questions': [question.format() for question in results],
             'total_questions': total_count,
-            'categories': {category['id']: category['type'] for category in get_all_categories()['categories']},
+            'categories': {category['id']: category['type'] for category in categories['categories']},
             'current_category': None
         }
 
