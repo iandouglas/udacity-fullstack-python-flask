@@ -125,6 +125,12 @@ class QuestionsTest(unittest.TestCase):
         self.assertEqual(data['message'], 'Resource not found')
 
     def test_create_new_question_happypath(self):
+        """
+        3. Create an endpoint to POST a new question,  which will require the question and answer text, category, and difficulty score.
+
+        ./src/components/FormView.js:37:      url: '/questions', //TODO: update request URL
+        sends question, answer, difficulty, category
+        """
         my_question = 'this is my question'
         my_answer = 'this is my answer'
         my_difficulty = '4'
@@ -162,17 +168,79 @@ class QuestionsTest(unittest.TestCase):
         self.assertGreater(q['id'], 23)
 
     def test_create_new_question_sadpath_missing_params(self):
-        pass
+        data = {
+            'question': None,
+            'answer': None,
+            'difficulty': None,
+            'category': None
+        }
+        response = self.client.post('/questions', json=data, content_type='application/json')
+        self.assertEqual(400, response.status_code)
+
+        data = json.loads(response.data.decode('utf-8'))
+        self.assertIn('message', data)
+        self.assertIsInstance(data['message'], str)
+        self.assertEqual(data['message'], 'New question was not added, check errors for reasons')
+        self.assertIn('errors', data)
+        self.assertIsInstance(data['errors'], list)
 
     def test_create_new_question_sadpath_bad_params(self):
-        pass
+        test_data = {
+            'question': 'q',
+            'answer': 'a',
+            'difficulty': '4',
+            'category': '3'
+        }
 
-    '''
-    3. Create an endpoint to POST a new question,  which will require the question and answer text, category, and difficulty score.
-    
-    ./src/components/FormView.js:37:      url: '/questions', //TODO: update request URL
-    sends question, answer, difficulty, category
-    '''
+        test_cases = [
+            {'error_position': 0, 'bad_data': {'question': ''}},
+            {'error_position': 0, 'bad_data': {'question': ' '}},
+            {'error_position': 0, 'bad_data': {'question': None}},
+            {'error_position': 0, 'bad_data': {'question': 5}},
+            {'error_position': 0, 'bad_data': {'question': []}},
+            {'error_position': 0, 'bad_data': {'question': {}}},
+
+            {'error_position': 1, 'bad_data': {'answer': ''}},
+            {'error_position': 1, 'bad_data': {'answer': ' '}},
+            {'error_position': 1, 'bad_data': {'answer': None}},
+            {'error_position': 1, 'bad_data': {'answer': 5}},
+            {'error_position': 1, 'bad_data': {'answer': []}},
+            {'error_position': 1, 'bad_data': {'answer': {}}},
+
+            {'error_position': 2, 'bad_data': {'difficulty': 0}},
+            {'error_position': 2, 'bad_data': {'difficulty': 6}},
+            {'error_position': 2, 'bad_data': {'difficulty': 'a'}},
+            {'error_position': 2, 'bad_data': {'difficulty': None}},
+            {'error_position': 2, 'bad_data': {'difficulty': []}},
+            {'error_position': 2, 'bad_data': {'difficulty': {}}},
+
+            {'error_position': 3, 'bad_data': {'category': 0}},
+            {'error_position': 3, 'bad_data': {'category': 600}},
+            {'error_position': 3, 'bad_data': {'category': 'a'}},
+            {'error_position': 3, 'bad_data': {'category': None}},
+            {'error_position': 3, 'bad_data': {'category': []}},
+            {'error_position': 3, 'bad_data': {'category': {}}},
+        ]
+        for test in test_cases:
+            payload = test_data.copy()
+            payload.update(test['bad_data'])
+            print('---')
+            print('payload=', payload)
+            response = self.client.post('/questions', json=payload, content_type='application/json')
+            print('response=', response.data)
+            self.assertEqual(400, response.status_code)
+
+            data = json.loads(response.data.decode('utf-8'))
+
+            error_msgs = [
+                'Question text cannot be blank, or was not a string',
+                'Answer text cannot be blank, or was not a string',
+                'Difficulty integer cannot be blank, and must be an integer between 1 and 5',
+                'Category integer cannot be blank, or is set to an invalid category'
+            ]
+
+            self.assertIn(error_msgs[test['error_position']], data['errors'])
+
 
     '''
     4. Create a POST endpoint to get questions based on a search term. It should return any questions for whom the search term is a substring of the question. 
