@@ -241,14 +241,48 @@ class QuestionsTest(unittest.TestCase):
 
             self.assertIn(error_msgs[test['error_position']], data['errors'])
 
+    def test_create_question_search_happypath(self):
+        """
+        4. Create a POST endpoint to get questions based on a search term. It should return any questions for whom the search term is a substring of the question.
 
-    '''
-    4. Create a POST endpoint to get questions based on a search term. It should return any questions for whom the search term is a substring of the question. 
-    
-    ./src/components/QuestionView.js:81:      url: `/questions`, //TODO: update request URL
-    sends searchTerm
-    expects result.questions, result.total_questions, result.current_category
-    '''
+        ./src/components/QuestionView.js:81:      url: `/questions`, //TODO: update request URL
+        sends searchTerm
+        expects result.questions, result.total_questions, result.current_category
+        """
+        search_term = 'the'
+        data = {
+            'searchTerm': search_term
+        }
+        response = self.client.post('/questions/search', json=data, content_type='application/json')
+        self.assertEqual(200, response.status_code)
+
+        data = json.loads(response.data.decode('utf-8'))
+        self.assertIn('current_category', data)
+        self.assertIsNone(data['current_category'])
+        self.assertIn('total_questions', data)
+        self.assertIsInstance(data['total_questions'], int)
+        self.assertEqual(data['total_questions'], 11)
+
+        self.assertIn('questions', data)
+        self.assertIsInstance(data['questions'], list)
+
+    def test_create_question_search_sadpath_no_matches(self):
+        terms = [
+            'FOINA;O8;A038HFSDHFKLDHkhs;gjhs0g;0934kg',
+            ''
+        ]
+
+        for term in terms:
+            data = {'searchTerm': term}
+            response = self.client.post('/questions/search', json=data, content_type='application/json')
+            self.assertEqual(200, response.status_code)
+
+            data = json.loads(response.data.decode('utf-8'))
+            self.assertEqual(data['total_questions'], 0)
+
+            self.assertIn('questions', data)
+            self.assertIsInstance(data['questions'], list)
+            self.assertListEqual(data['questions'], [])
 
     '''
     6. Create a POST endpoint to get questions to play the quiz. 
