@@ -241,7 +241,7 @@ class QuestionsTest(unittest.TestCase):
 
             self.assertIn(error_msgs[test['error_position']], data['errors'])
 
-    def test_create_question_search_happypath(self):
+    def test_question_search_happypath(self):
         """
         4. Create a POST endpoint to get questions based on a search term. It should return any questions for whom the search term is a substring of the question.
 
@@ -266,7 +266,7 @@ class QuestionsTest(unittest.TestCase):
         self.assertIn('questions', data)
         self.assertIsInstance(data['questions'], list)
 
-    def test_create_question_search_sadpath_no_matches(self):
+    def test_question_search_sadpath_no_matches(self):
         terms = [
             'FOINA;O8;A038HFSDHFKLDHkhs;gjhs0g;0934kg',
             ''
@@ -283,14 +283,3 @@ class QuestionsTest(unittest.TestCase):
             self.assertIn('questions', data)
             self.assertIsInstance(data['questions'], list)
             self.assertListEqual(data['questions'], [])
-
-    '''
-    6. Create a POST endpoint to get questions to play the quiz. 
-    This endpoint should take category and previous question parameters 
-    and return a random questions within the given category, 
-    if provided, and that is not one of the previous questions. 
-    
-    ./src/components/QuizView.js:51:      url: '/quizzes', //TODO: update request URL
-    sends previousQuestions, quizCategory
-    expects question
-    '''
