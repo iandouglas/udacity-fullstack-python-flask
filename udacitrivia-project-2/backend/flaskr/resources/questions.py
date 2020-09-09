@@ -38,19 +38,12 @@ class QuestionsResource(Resource):
         print('---')
         print('incoming data: (raw)', request.data)
         print('incoming data: (decoded)', data)
-        try:
-            if data['question'] is None or data['question'].__class__ != str or len(data['question'].strip()) < 1:
-                good_data = False
-                errors.append('Question text cannot be blank, or was not a string')
-        except:
+
+        if data['question'] is None or data['question'].__class__ != str or len(data['question'].strip()) < 1:
             good_data = False
             errors.append('Question text cannot be blank, or was not a string')
 
-        try:
-            if data['answer'] is None or data['answer'].__class__ != str or len(data['answer'].strip()) < 1:
-                good_data = False
-                errors.append('Answer text cannot be blank, or was not a string')
-        except:
+        if data['answer'] is None or data['answer'].__class__ != str or len(data['answer'].strip()) < 1:
             good_data = False
             errors.append('Answer text cannot be blank, or was not a string')
 
@@ -77,8 +70,7 @@ class QuestionsResource(Resource):
                 difficulty=bleach.clean(data['difficulty']),
                 category=bleach.clean(data['category'])
             )
-            db.session.add(q)
-            db.session.commit()
+            q.insert()
             payload = {
                 'message': 'New question successfully added',
                 'question': q.format()
