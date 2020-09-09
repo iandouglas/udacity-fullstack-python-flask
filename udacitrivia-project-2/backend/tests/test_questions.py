@@ -8,11 +8,11 @@ from tests import db_drop_everything, seed_data
 class QuestionsTest(unittest.TestCase):
     def setUp(self):
         self.app = create_app('testing')
+        self.client = self.app.test_client()
         self.app_context = self.app.app_context()
         self.app_context.push()
         db.create_all()
         seed_data(db)
-        self.client = self.app.test_client()
 
     def tearDown(self):
         db.session.remove()
@@ -71,7 +71,6 @@ class QuestionsTest(unittest.TestCase):
             self.assertIsInstance(first_question['difficulty'], int)
             self.assertEqual(first_question['difficulty'], 4)
 
-
     def test_get_paginated_questions_page_2_and_3(self):
         """
         test getting page 2, and page 3 should have no results
@@ -97,7 +96,6 @@ class QuestionsTest(unittest.TestCase):
 
                 first_question = data['questions'][0]
                 self.assertEqual(first_question['question'], "The Taj Mahal is located in which Indian city?")
-
 
     def test_delete_a_question_happypath(self):
         """
@@ -136,8 +134,8 @@ class QuestionsTest(unittest.TestCase):
             'difficulty': my_difficulty,
             'category': my_category
         }
-        response = self.client.post('/questions')
-        self.assertEqual(200, response.status_code)
+        response = self.client.post('/questions', json=data, content_type='application/json')
+        self.assertEqual(201, response.status_code)
 
         data = json.loads(response.data.decode('utf-8'))
         self.assertIn('message', data)
@@ -153,11 +151,14 @@ class QuestionsTest(unittest.TestCase):
         self.assertIsInstance(q['answer'], str)
         self.assertEqual(q['answer'], my_answer)
         self.assertIn('difficulty', q)
-        self.assertIsInstance(q['difficulty'], str)
-        self.assertEqual(q['difficulty'], my_difficulty)
+        self.assertIsInstance(q['difficulty'], int)
+        self.assertEqual(q['difficulty'], int(my_difficulty))
         self.assertIn('category', q)
         self.assertIsInstance(q['category'], str)
         self.assertEqual(q['category'], my_category)
+        self.assertIn('id', q)
+        self.assertIsInstance(q['id'], int)
+        self.assertGreater(q['id'], 23)
 
     def test_create_new_question_sadpath_missing_params(self):
         pass

@@ -1,3 +1,5 @@
+import json
+
 from flask_restful import Resource
 from flask import request, abort, current_app
 from sqlalchemy.orm.exc import NoResultFound
@@ -24,6 +26,22 @@ class QuestionsResource(Resource):
             'categories': {category['id']: category['type'] for category in get_all_categories()['categories']},
             'current_category': None
         }
+
+    def post(self):
+        data = json.loads(request.data)
+        q = Question(
+            question=data['question'],
+            answer=data['answer'],
+            difficulty=data['difficulty'],
+            category=data['category']
+        )
+        db.session.add(q)
+        db.session.commit()
+        payload = {
+            'message': 'New question successfully added',
+            'question': q.format()
+        }
+        return payload, 201
 
 
 class QuestionResource(Resource):
