@@ -278,7 +278,7 @@ class QuestionsTest(unittest.TestCase):
             self.assertEqual(200, response.status_code)
 
             data = json.loads(response.data.decode('utf-8'))
-            self.assertEqual(data['total_questions'], 0)
+            self.assertEqual(0, data['total_questions'])
 
             self.assertIn('questions', data)
             self.assertIsInstance(data['questions'], list)

@@ -35,9 +35,6 @@ class QuestionsResource(Resource):
         good_data = True
 
         data = json.loads(request.data)
-        print('---')
-        print('incoming data: (raw)', request.data)
-        print('incoming data: (decoded)', data)
 
         if data['question'] is None or data['question'].__class__ != str or len(data['question'].strip()) < 1:
             good_data = False
@@ -92,4 +89,20 @@ class QuestionResource(Resource):
             return abort(404, 'Resource not found')
         question.delete()
         return {}, 204
+
+
+class QuestionSearchResource(Resource):
+    def post(self):
+        data = json.loads(request.data)
+        search_term = bleach.clean(data['searchTerm'].strip())
+
+        results = []
+        if len(search_term):
+            results = Question.query.filter(Question.question.ilike('%{term}%'.format(term=search_term))).all()
+
+        return {
+            'questions': [question.format() for question in results],
+            'total_questions': len(results),
+            'current_category': None
+        }
 

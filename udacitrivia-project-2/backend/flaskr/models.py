@@ -26,8 +26,9 @@ class Question(db.Model):
         db.session.add(self)
         db.session.commit()
 
-    def update(self):
-        db.session.commit()
+    # not used in the project
+    # def update(self):
+    #     db.session.commit()
 
     def delete(self):
         db.session.delete(self)
