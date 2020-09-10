@@ -128,7 +128,7 @@ class QuestionsTest(unittest.TestCase):
         """
         3. Create an endpoint to POST a new question,  which will require the question and answer text, category, and difficulty score.
 
-        ./src/components/FormView.js:37:      url: '/questions', //TODO: update request URL
+        ./src/components/FormView.js:37:      url: '/questions'
         sends question, answer, difficulty, category
         """
         my_question = 'this is my question'
@@ -245,7 +245,7 @@ class QuestionsTest(unittest.TestCase):
         """
         4. Create a POST endpoint to get questions based on a search term. It should return any questions for whom the search term is a substring of the question.
 
-        ./src/components/QuestionView.js:81:      url: `/questions`, //TODO: update request URL
+        ./src/components/QuestionView.js:81:      url: `/questions`
         sends searchTerm
         expects result.questions, result.total_questions, result.current_category
         """

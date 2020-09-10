@@ -27,7 +27,7 @@ class QuizTest(unittest.TestCase):
         and return a random questions within the given category,
         if provided, and that is not one of the previous questions.
 
-        ./src/components/QuizView.js:51:      url: '/quizzes', //TODO: update request URL
+        ./src/components/QuizView.js:51:      url: '/quizzes'
         sends previousQuestions, quizCategory
         expects question
         """
@@ -84,9 +84,6 @@ class QuizTest(unittest.TestCase):
         self.assertIn('id', q_data)
         self.assertIsInstance(q_data['id'], int)
         self.assertEqual(17, q_data['id'])
-
-    def test_play_quiz_happypath_science_category(self):
-        pass
 
     def test_play_quiz_happypath_no_more_questions(self):
         params = {
