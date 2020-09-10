@@ -41,16 +41,20 @@ class QuizTest(unittest.TestCase):
         data = json.loads(response.data.decode('utf-8'))
 
         self.assertIn('question', data)
-        self.assertIsInstance(data['question'], str)
+        self.assertIsInstance(data['question'], dict)
 
-        self.assertIn('answer', data)
-        self.assertIsInstance(data['answer'], str)
+        q_data = data['question']
+        self.assertIn('question', q_data)
+        self.assertIsInstance(q_data['question'], str)
 
-        self.assertIn('category', data)
-        self.assertIsInstance(data['category'], str)
+        self.assertIn('answer', q_data)
+        self.assertIsInstance(q_data['answer'], str)
 
-        self.assertIn('id', data)
-        self.assertIsInstance(data['id'], int)
+        self.assertIn('category', q_data)
+        self.assertIsInstance(q_data['category'], str)
+
+        self.assertIn('id', q_data)
+        self.assertIsInstance(q_data['id'], int)
 
     def test_play_quiz_happypath_all_categories_known_answer(self):
         # in this scenario there's only one possible answer from the database
@@ -63,27 +67,38 @@ class QuizTest(unittest.TestCase):
         self.assertEqual(200, response.status_code)
         data = json.loads(response.data.decode('utf-8'))
 
-        self.assertIn('question', data)
-        self.assertIsInstance(data['question'], str)
-        self.assertEqual("La Giaconda is better known as what?", data['question'])
+        q_data = data['question']
 
-        self.assertIn('answer', data)
-        self.assertIsInstance(data['answer'], str)
-        self.assertEqual("Mona Lisa", data['answer'])
+        self.assertIn('question', q_data)
+        self.assertIsInstance(q_data['question'], str)
+        self.assertEqual("La Giaconda is better known as what?", q_data['question'])
 
-        self.assertIn('category', data)
-        self.assertIsInstance(data['category'], str)
-        self.assertEqual("2", data['category'])
+        self.assertIn('answer', q_data)
+        self.assertIsInstance(q_data['answer'], str)
+        self.assertEqual("Mona Lisa", q_data['answer'])
 
-        self.assertIn('id', data)
-        self.assertIsInstance(data['id'], int)
-        self.assertEqual(17, data['id'])
+        self.assertIn('category', q_data)
+        self.assertIsInstance(q_data['category'], str)
+        self.assertEqual("2", q_data['category'])
+
+        self.assertIn('id', q_data)
+        self.assertIsInstance(q_data['id'], int)
+        self.assertEqual(17, q_data['id'])
 
     def test_play_quiz_happypath_science_category(self):
         pass
 
     def test_play_quiz_happypath_no_more_questions(self):
-        pass
+        params = {
+            "previous_questions": [2, 4, 5, 6, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
+            "quiz_category": {"type": "all", "id": "0"}
+        }
+        response = self.client.post('/quizzes', json=params)
+
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.data.decode('utf-8'))
+
+        self.assertNotIn('question', data)
 
     def test_play_quiz_sadpath_bad_category(self):
         pass

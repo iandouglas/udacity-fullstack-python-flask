@@ -22,7 +22,7 @@ class QuizView extends Component {
 
   componentDidMount(){
     $.ajax({
-      url: `/categories`, //TODO: update request URL
+      url: `/categories`,
       type: "GET",
       success: (result) => {
         this.setState({ categories: result.categories })
@@ -64,7 +64,7 @@ class QuizView extends Component {
         this.setState({
           showAnswer: false,
           previousQuestions: previousQuestions,
-          currentQuestion: result.question,
+          currentQuestion: result.question ? result.question : null,
           guess: '',
           forceEnd: result.question ? false : true
         })
@@ -104,7 +104,7 @@ class QuizView extends Component {
           <div className="quiz-play-holder">
               <div className="choose-header">Choose Category</div>
               <div className="category-holder">
-                  <div className="play-category" onClick={this.selectCategory}>ALL</div>
+                  <div className="play-category" onClick={() => this.selectCategory({type:"all", id:0})}>ALL</div>
                   {Object.keys(this.state.categories).map(id => {
                   return (
                     <div
@@ -156,7 +156,7 @@ class QuizView extends Component {
         ? this.renderCorrectAnswer()
         : (
           <div className="quiz-play-holder">
-            <div className="quiz-question">{this.state.currentQuestion.question}</div>
+            <div className="quiz-question">Question: {this.state.currentQuestion.question}</div>
             <form onSubmit={this.submitGuess}>
               <input type="text" name="guess" onChange={this.handleChange}/>
               <input className="submit-guess button" type="submit" value="Submit Answer" />

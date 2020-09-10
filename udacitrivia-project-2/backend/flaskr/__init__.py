@@ -24,11 +24,13 @@ def create_app(config_name='default'):
     # putting flask-restful resource imports here to avoid circular dependencies
     from flaskr.resources.categories import CategoriesResource, CategoryQuestionsResource
     from flaskr.resources.questions import QuestionsResource, QuestionResource, QuestionSearchResource
+    from flaskr.resources.quizzes import QuizzesResource
 
     api.add_resource(CategoriesResource, '/categories')
     api.add_resource(CategoryQuestionsResource, '/categories/<int:id>/questions')
     api.add_resource(QuestionsResource, '/questions')
     api.add_resource(QuestionSearchResource, '/questions/search')
     api.add_resource(QuestionResource, '/questions/<int:id>')
+    api.add_resource(QuizzesResource, '/quizzes')
 
     return app
