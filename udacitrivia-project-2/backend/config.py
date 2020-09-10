@@ -8,10 +8,6 @@ class Config:
     SQLALCHEMY_RECORD_QUERIES = True
     FLASKY_QUESTIONS_PER_PAGE = 10
 
-    @staticmethod
-    def init_app(app):
-        pass
-
 
 class DevelopmentConfig(Config):
     DEBUG = True

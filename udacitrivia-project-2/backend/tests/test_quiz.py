@@ -101,4 +101,13 @@ class QuizTest(unittest.TestCase):
         self.assertNotIn('question', data)
 
     def test_play_quiz_sadpath_bad_category(self):
-        pass
+        params = {
+            "previous_questions": [2, 4, 5, 6, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
+            "quiz_category": {"type": "unknown", "id": "19"}
+        }
+        response = self.client.post('/quizzes', json=params)
+
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.data.decode('utf-8'))
+
+        self.assertNotIn('question', data)

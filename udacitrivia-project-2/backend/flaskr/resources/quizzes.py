@@ -3,7 +3,7 @@ import json
 import bleach
 from flask import jsonify, abort, request
 from flask_restful import Resource
-from sqlalchemy import not_
+from sqlalchemy import not_, func
 
 from flaskr import db
 from flaskr.models import Category, Question
@@ -15,11 +15,10 @@ class QuizzesResource(Resource):
         category = data['quiz_category']['id'].strip()
         previous_questions = data['previous_questions']
 
-        result = None
+        query = db.session.query(Question).filter(not_(Question.id.in_(previous_questions)))
         if category and category != '0':
-            result = db.session.query(Question).filter_by(category=category).filter(not_(Question.id.in_(previous_questions))).first()
-        elif category == '0':
-            result = db.session.query(Question).filter(not_(Question.id.in_(previous_questions))).first()
+            query = query.filter_by(category=category)
+        result = query.order_by(func.random()).first()
         if result is None:
             return {}
         else:
