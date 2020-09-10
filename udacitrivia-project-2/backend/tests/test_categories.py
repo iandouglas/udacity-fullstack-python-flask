@@ -1,8 +1,6 @@
 import json
 import unittest
-
 from sqlalchemy.exc import IntegrityError
-
 from flaskr import create_app, db
 from flaskr.models import Category
 from tests import db_drop_everything, seed_data

@@ -117,12 +117,21 @@ class QuestionsTest(unittest.TestCase):
 
     def test_delete_a_question_sadpath_404(self):
         response = self.client.delete('/questions/0')
+        self.assertEqual(response.status_code, 422)
+
+        data = json.loads(response.data.decode('utf-8'))
+        self.assertIn('message', data)
+        self.assertIsInstance(data['message'], str)
+        self.assertEqual('The request was well-formed but was unable to be followed due to semantic errors.', data['message'])
+
+    def test_delete_a_question_sadpath_bad_id(self):
+        response = self.client.delete('/questions/kjh2f8w')
         self.assertEqual(response.status_code, 404)
 
         data = json.loads(response.data.decode('utf-8'))
         self.assertIn('message', data)
         self.assertIsInstance(data['message'], str)
-        self.assertEqual(data['message'], 'Resource not found')
+        self.assertEqual('Resource not found', data['message'])
 
     def test_create_new_question_happypath(self):
         """
@@ -178,9 +187,14 @@ class QuestionsTest(unittest.TestCase):
         self.assertEqual(400, response.status_code)
 
         data = json.loads(response.data.decode('utf-8'))
+        self.assertIn('success', data)
+        self.assertFalse(data['success'])
+        self.assertIn('error', data)
+        self.assertIsInstance(data['error'], int)
+        self.assertEqual(400, data['error'])
         self.assertIn('message', data)
         self.assertIsInstance(data['message'], str)
-        self.assertEqual(data['message'], 'New question was not added, check errors for reasons')
+        self.assertEqual('New question was not added, check errors for reasons', data['message'])
         self.assertIn('errors', data)
         self.assertIsInstance(data['errors'], list)
 
@@ -231,7 +245,14 @@ class QuestionsTest(unittest.TestCase):
             self.assertEqual(400, response.status_code)
 
             data = json.loads(response.data.decode('utf-8'))
-
+            self.assertIn('success', data)
+            self.assertFalse(data['success'])
+            self.assertIn('error', data)
+            self.assertIsInstance(data['error'], int)
+            self.assertEqual(400, data['error'])
+            self.assertIn('message', data)
+            self.assertIsInstance(data['message'], str)
+            self.assertEqual('New question was not added, check errors for reasons', data['message'])
             error_msgs = [
                 'Question text cannot be blank, or was not a string',
                 'Answer text cannot be blank, or was not a string',

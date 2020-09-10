@@ -1,5 +1,4 @@
 import unittest
-
 from flaskr import create_app, db
 from tests import db_drop_everything
 

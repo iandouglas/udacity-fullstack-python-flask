@@ -1,5 +1,4 @@
 import json
-
 import bleach
 from flask_restful import Resource
 from flask import request, abort, current_app
@@ -74,11 +73,12 @@ class QuestionsResource(Resource):
             }
             return payload, 201
 
-        payload = {
+        return {
+            'success': False,
+            'error': 400,
             'message': 'New question was not added, check errors for reasons',
             'errors': errors
-        }
-        return payload, 400
+        }, 400
 
 
 class QuestionResource(Resource):
@@ -86,7 +86,7 @@ class QuestionResource(Resource):
         try:
             question = db.session.query(Question).filter_by(id=id).one()
         except NoResultFound:
-            return abort(404, 'Resource not found')
+            return abort(422)
         question.delete()
         return {}, 204
 

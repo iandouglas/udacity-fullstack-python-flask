@@ -1,12 +1,9 @@
 import json
-
-import bleach
-from flask import jsonify, abort, request
+from flask import request
 from flask_restful import Resource
 from sqlalchemy import not_, func
-
 from flaskr import db
-from flaskr.models import Category, Question
+from flaskr.models import Question
 
 
 class QuizzesResource(Resource):
