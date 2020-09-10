@@ -20,7 +20,7 @@ class QuizTest(unittest.TestCase):
         db_drop_everything(db)
         self.app_context.pop()
 
-    def test_play_quiz_happypath_all_categories(self):
+    def test_play_quiz_happypath_all_categories_unknown_answer(self):
         """
         6. Create a POST endpoint to get questions to play the quiz.
         This endpoint should take category and previous question parameters
@@ -31,6 +31,53 @@ class QuizTest(unittest.TestCase):
         sends previousQuestions, quizCategory
         expects question
         """
+        params = {
+            "previous_questions": [],
+            "quiz_category": {"type": "all", "id": "0"}
+        }
+        response = self.client.post('/quizzes', json=params)
+
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.data.decode('utf-8'))
+
+        self.assertIn('question', data)
+        self.assertIsInstance(data['question'], str)
+
+        self.assertIn('answer', data)
+        self.assertIsInstance(data['answer'], str)
+
+        self.assertIn('category', data)
+        self.assertIsInstance(data['category'], str)
+
+        self.assertIn('id', data)
+        self.assertIsInstance(data['id'], int)
+
+    def test_play_quiz_happypath_all_categories_known_answer(self):
+        # in this scenario there's only one possible answer from the database
+        params = {
+            "previous_questions": [2, 4, 5, 6, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21, 22, 23],
+            "quiz_category": {"type": "all", "id": "0"}
+        }
+        response = self.client.post('/quizzes', json=params)
+
+        self.assertEqual(200, response.status_code)
+        data = json.loads(response.data.decode('utf-8'))
+
+        self.assertIn('question', data)
+        self.assertIsInstance(data['question'], str)
+        self.assertEqual("La Giaconda is better known as what?", data['question'])
+
+        self.assertIn('answer', data)
+        self.assertIsInstance(data['answer'], str)
+        self.assertEqual("Mona Lisa", data['answer'])
+
+        self.assertIn('category', data)
+        self.assertIsInstance(data['category'], str)
+        self.assertEqual("2", data['category'])
+
+        self.assertIn('id', data)
+        self.assertIsInstance(data['id'], int)
+        self.assertEqual(17, data['id'])
 
     def test_play_quiz_happypath_science_category(self):
         pass
