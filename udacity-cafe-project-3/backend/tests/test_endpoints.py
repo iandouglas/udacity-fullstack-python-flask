@@ -1,10 +1,9 @@
 import unittest
 from api import create_app, db
 from tests import db_drop_everything, seed_data
-from api.database.models import Drink
 
 
-class CategoriesTest(unittest.TestCase):
+class EndpointsTest(unittest.TestCase):
     def setUp(self):
         self.app = create_app('testing')
         self.app_context = self.app.app_context()
@@ -18,5 +17,5 @@ class CategoriesTest(unittest.TestCase):
         db_drop_everything(db)
         self.app_context.pop()
 
-    def test_category_creation(self):
-        drink = Drink.new
+    def test_endpoint(self):
+        pass
