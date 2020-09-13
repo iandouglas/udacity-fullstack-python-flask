@@ -1,13 +1,12 @@
-# import json
-# from flask import request, _request_ctx_stack
 from functools import wraps
-# from jose import jwt
-# from urllib.request import urlopen
+from flask import abort, request
 
-
-AUTH0_DOMAIN = 'wildapps.auth0.com'
+AUTH0_DOMAIN = 'wildapps.us.auth0.com'
 ALGORITHMS = ['RS256']
 API_AUDIENCE = 'fsnd-cafe'
+AUTH0_CLIENT_ID = 'OkMASXWuwnKmgx1Sf7slHHTNaMLG3yy1'
+REDIRECT_URL = 'http://localhost:5000/headers'
+AUTH0_AUTHORIZE_URL = f'https://{AUTH0_DOMAIN}/authorize?audience={API_AUDIENCE}&response_type=token&client_id={AUTH0_CLIENT_ID}&redirect_uri={REDIRECT_URL}'
 
 
 # AuthError Exception
@@ -29,8 +28,37 @@ def get_token_auth_header():
         it should attempt to split bearer and the token
             it should raise an AuthError if the header is malformed
         return the token part of the header
+    Obtains the Access Token from the Authorization Header
+    credit: Udacity lesson and sample code for BasicFlaskAuth
     """
-    raise Exception('Not Implemented')
+    auth = request.headers.get('Authorization', None)
+    if not auth:
+        raise AuthError({
+            'code': 'authorization_header_missing',
+            'description': 'Authorization header is expected.'
+        }, 401)
+
+    parts = auth.split()
+    if parts[0].lower() != 'bearer':
+        raise AuthError({
+            'code': 'invalid_header',
+            'description': 'Authorization header must start with "Bearer".'
+        }, 401)
+
+    elif len(parts) == 1:
+        raise AuthError({
+            'code': 'invalid_header',
+            'description': 'Token not found.'
+        }, 401)
+
+    elif len(parts) > 2:
+        raise AuthError({
+            'code': 'invalid_header',
+            'description': 'Authorization header must be bearer token.'
+        }, 401)
+
+    token = parts[1]
+    return token
 
 
 def check_permissions(permission, payload):
@@ -81,8 +109,11 @@ def requires_auth(permission=''):
         @wraps(f)
         def wrapper(*args, **kwargs):
             token = get_token_auth_header()
-            payload = verify_decode_jwt(token)
-            check_permissions(permission, payload)
+            try:
+                payload = verify_decode_jwt(token)
+                check_permissions(permission, payload)
+            except:
+                abort(401)
             return f(payload, *args, **kwargs)
 
         return wrapper
