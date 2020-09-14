@@ -5,7 +5,7 @@ from unittest.mock import patch
 from flask import jsonify
 
 from api.auth.auth import AuthError
-from tests import db_drop_everything, seed_data, assert_value_type
+from tests import db_drop_everything, seed_data, assert_payload_field_type_value
 
 
 def mock_decorator(perm):
@@ -39,9 +39,9 @@ class AppTest(unittest.TestCase):
     def test_cors(self):
         response = self.client.head('/')
 
-        assert_value_type(self, response.headers, 'Access-Control-Allow-Origin', str, '*')
-        assert_value_type(self, response.headers, 'Access-Control-Allow-Headers', str, 'Content-Type')
-        assert_value_type(self, response.headers, 'Access-Control-Allow-Methods', str, 'GET, PATCH, POST, DELETE, OPTIONS')
+        assert_payload_field_type_value(self, response.headers, 'Access-Control-Allow-Origin', str, '*')
+        assert_payload_field_type_value(self, response.headers, 'Access-Control-Allow-Headers', str, 'Content-Type')
+        assert_payload_field_type_value(self, response.headers, 'Access-Control-Allow-Methods', str, 'GET, PATCH, POST, DELETE, OPTIONS')
 
     @patch('api.auth.auth.check_permissions')
     @patch('api.auth.auth.verify_decode_jwt')
@@ -69,6 +69,6 @@ class AppTest(unittest.TestCase):
             response = self.client.get('/auth-required', headers={'Authorization': 'Bearer foo'})
         except AuthError as e:
             self.assertRaises(AuthError)
-            assert_value_type(self, e.error, 'code', str, 'invalid_header')
-            assert_value_type(self, e.error, 'description', str, 'Invalid permissions')
+            assert_payload_field_type_value(self, e.error, 'code', str, 'invalid_header')
+            assert_payload_field_type_value(self, e.error, 'description', str, 'Invalid permissions')
         self.assertEqual(403, response.status_code)

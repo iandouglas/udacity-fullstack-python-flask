@@ -1,12 +1,8 @@
-from functools import wraps
-
 from flask_cors import CORS
 from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
-
 from api.auth.auth import get_token_auth_header, verify_decode_jwt, requires_auth
-from api.database.models import setup_db
-from flask import Flask, jsonify, abort  # request, abort
+from flask import Flask, jsonify
 from config import config
 
 db = SQLAlchemy()
@@ -15,7 +11,7 @@ db = SQLAlchemy()
 def create_app(config_name='default'):
     app = Flask(__name__)
     app.config.from_object(config[config_name])
-    setup_db(app)
+    db.init_app(app)
     api = Api(app)
     CORS(app, resources={r"/*": {"origins": "*"}})
 
@@ -76,5 +72,10 @@ def create_app(config_name='default'):
             "success": True,
             "message": "authorized"
         }), 200
+
+    # putting flask-restful resource imports here to avoid circular dependencies
+    from api.resources.drinks import DrinksResource
+
+    api.add_resource(DrinksResource, '/drinks')
 
     return app

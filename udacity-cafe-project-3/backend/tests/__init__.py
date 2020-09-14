@@ -3,10 +3,15 @@ from sqlalchemy.engine import reflection
 from sqlalchemy.sql.ddl import DropConstraint, DropTable
 
 
-def assert_value_type(obj, payload, field, type, value):
+def assert_payload_field_type_value(obj, payload, field, data_type, value):
     obj.assertIn(field, payload)
-    obj.assertIsInstance(payload[field], type)
+    obj.assertIsInstance(payload[field], data_type)
     obj.assertEqual(value, payload[field])
+
+
+def assert_payload_field_type(obj, payload, field, data_type):
+    obj.assertIn(field, payload)
+    obj.assertIsInstance(payload[field], data_type)
 
 
 def db_drop_everything(db):
