@@ -24,3 +24,4 @@ flask-script==2.0.6
 pytest==6.0.2
 Flask-RESTful==0.3.8
 coverage==5.2.1
+mock==4.0.2

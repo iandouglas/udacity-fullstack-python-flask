@@ -63,3 +63,11 @@ class ErrorsTest(unittest.TestCase):
             self.assertRaises(AuthError)
             assert_value_type(self, e.error, 'code', str, 'invalid_header')
             assert_value_type(self, e.error, 'description', str, 'Authorization header must be bearer token.')
+
+    def test_401_error_auth_bearer_too_big(self):
+        try:
+            self.client.get('/auth-required', headers={'Authorization': 'Bearer foo baz'})
+        except AuthError as e:
+            self.assertRaises(AuthError)
+            assert_value_type(self, e.error, 'code', str, 'invalid_header')
+            assert_value_type(self, e.error, 'description', str, 'Authorization header must be bearer token.')
