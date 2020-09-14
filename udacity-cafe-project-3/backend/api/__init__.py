@@ -12,7 +12,6 @@ from config import config
 db = SQLAlchemy()
 
 
-
 def create_app(config_name='default'):
     app = Flask(__name__)
     app.config.from_object(config[config_name])
@@ -48,10 +47,17 @@ def create_app(config_name='default'):
             "message": "resource not found"
         }), 404
 
-    # TODO implement error handler for AuthError
-    '''
-    error handler should conform to general task above 
-    '''
+    @app.errorhandler(403)
+    def not_found(error):
+        """
+        error handler for 403
+        """
+        return jsonify({
+            "success": False,
+            "error": 403,
+            "message": "forbidden"
+        }), 403
+
     @app.errorhandler(401)
     def not_found(error):
         """
@@ -61,12 +67,14 @@ def create_app(config_name='default'):
             "success": False,
             "error": 401,
             "message": "unauthorized"
-        }), 404
+        }), 401
 
     @app.route('/auth-required')
     @requires_auth('post:drink')
     def auth_required(payload):
-        print(payload)
-        abort(401)
+        return jsonify({
+            "success": True,
+            "message": "authorized"
+        }), 200
 
     return app
