@@ -7,7 +7,7 @@ from api.database.models import Drink
 from tests import db_drop_everything, seed_data, assert_payload_field_type_value, assert_payload_field_type
 
 
-class DrinksTest(unittest.TestCase):
+class GetAllDrinksTest(unittest.TestCase):
     def setUp(self):
         self.app = create_app('testing')
         self.client = self.app.test_client()
@@ -23,7 +23,7 @@ class DrinksTest(unittest.TestCase):
         self.app_context.pop()
 
 
-class GuestUserTest(DrinksTest):
+class GuestUserTest(GetAllDrinksTest):
     def test_endpoint_drinks_happypath_with_drinks(self):
         drink = Drink(
             'blue water',
@@ -60,7 +60,7 @@ class GuestUserTest(DrinksTest):
         assert_payload_field_type_value(self, data, 'drinks', list, [])
 
 
-class BaristaUserTest(DrinksTest):
+class BaristaUserTest(GetAllDrinksTest):
     @patch('api.auth.auth.verify_decode_jwt')
     @patch('api.auth.auth.get_token_auth_header')
     def test_endpoint_drinks_happypath_with_drinks(self, mock_get_token_auth_header, mock_verify_decode_jwt):
@@ -106,13 +106,13 @@ class BaristaUserTest(DrinksTest):
         assert_payload_field_type_value(self, data, 'drinks', list, [])
 
 
-class ManagerUserTest(DrinksTest):
+class ManagerUserTest(GetAllDrinksTest):
     @patch('api.auth.auth.verify_decode_jwt')
     @patch('api.auth.auth.get_token_auth_header')
     def test_endpoint_drinks_happypath_with_drinks(self, mock_get_token_auth_header, mock_verify_decode_jwt):
         mock_get_token_auth_header.return_value = 'manager-token'
         mock_verify_decode_jwt.return_value = {'permissions': ['delete:drinks', 'get:drinks-detail', 'patch:drinks', 'post:drinks']}
-        
+
         drink = Drink(
             'blue water',
             [{
