@@ -50,4 +50,9 @@ class GuestUserTest(DrinksTest):
         assert_payload_field_type_value(self, first_recipe, 'parts', int, 1)
 
     def test_endpoint_drinks_happypath_with_no_drinks(self):
-        pass
+        response = self.client.get('/drinks')
+        data = json.loads(response.data.decode('utf-8'))
+
+        self.assertEqual(200, response.status_code)
+        assert_payload_field_type_value(self, data, 'success', bool, True)
+        assert_payload_field_type_value(self, data, 'drinks', list, [])
