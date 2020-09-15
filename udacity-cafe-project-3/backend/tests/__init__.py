@@ -14,7 +14,7 @@ def assert_payload_field_type(obj, payload, field, data_type):
     obj.assertIsInstance(payload[field], data_type)
 
 
-def db_drop_everything(db):
+def db_drop_everything(db):   # pragma: no cover
     # source: https://www.mbeckler.org/blog/?p=218
     # From http://www.sqlalchemy.org/trac/wiki/UsageRecipes/DropEverything
 

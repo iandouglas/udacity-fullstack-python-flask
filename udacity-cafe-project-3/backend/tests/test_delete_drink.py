@@ -25,7 +25,8 @@ class DeleteDrinksTest(unittest.TestCase):
                 "name": "Water",
                 "color": "blue",
                 "parts": 1
-            }]
+            }],
+            drink_id=1
         )
         drink.insert()
         drink_id = drink.id
@@ -106,6 +107,7 @@ class ManagerUserTest(DeleteDrinksTest):
             self.assertEqual(200, response.status_code)
             data = json.loads(response.data.decode('utf-8'))
             assert_payload_field_type_value(self, data, 'success', bool, True)
+            assert_payload_field_type_value(self, data, 'delete', str, str(drink_id))
 
     @patch('api.auth.auth.verify_decode_jwt')
     @patch('api.auth.auth.get_token_auth_header')
@@ -115,10 +117,10 @@ class ManagerUserTest(DeleteDrinksTest):
 
         response = self.client.delete(f'/drinks/{BAD_DRINK_ID}')
 
-        self.assertEqual(422, response.status_code)
+        self.assertEqual(404, response.status_code)
         data = json.loads(response.data.decode('utf-8'))
-        assert_payload_field_type_value(self, data, 'error', int, 422)
-        assert_payload_field_type_value(self, data, 'message', str, 'unprocessable')
+        assert_payload_field_type_value(self, data, 'error', int, 404)
+        assert_payload_field_type_value(self, data, 'message', str, 'resource not found')
         assert_payload_field_type_value(self, data, 'success', bool, False)
 
 

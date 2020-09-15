@@ -27,12 +27,11 @@ class DrinkResource(Resource):
         drink_id = kwargs['drink_id']
         try:
             question = db.session.query(Drink).filter_by(id=drink_id).one()
-        except AuthError:
-            return abort(401)
         except NoResultFound:
-            return abort(422)
+            return abort(404)
 
         question.delete()
         return {
-            'success': True
+            'success': True,
+            'delete': drink_id
         }, 200

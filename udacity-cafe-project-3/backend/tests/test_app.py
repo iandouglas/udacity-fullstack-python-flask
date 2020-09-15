@@ -1,24 +1,8 @@
+import json
 import unittest
-from functools import wraps
 from unittest.mock import patch
-
-from flask import jsonify
-
 from api.auth.auth import AuthError
 from tests import db_drop_everything, seed_data, assert_payload_field_type_value
-
-
-def mock_decorator(perm):
-    def decorator(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            return f(*args, **kwargs)
-        return decorated_function
-    return decorator
-
-
-patch('api.auth.auth.requires_auth', mock_decorator).start()
-# this create_app import MUST come after the patch above
 from api import create_app, db
 
 
@@ -63,12 +47,9 @@ class AppTest(unittest.TestCase):
         mock_get_token_auth_header.return_value = 'token-abc123'
         mock_verify_decode_jwt.return_value = {'permissions': ['get:drink']}
 
-        # response = self.client.get('/auth-required', headers={})
-        response = None
-        try:
-            response = self.client.get('/auth-required', headers={'Authorization': 'Bearer foo'})
-        except AuthError as e:
-            self.assertRaises(AuthError)
-            assert_payload_field_type_value(self, e.error, 'code', str, 'invalid_header')
-            assert_payload_field_type_value(self, e.error, 'description', str, 'Invalid permissions')
+        response = self.client.get('/auth-required', headers={'Authorization': 'Bearer foo'})
         self.assertEqual(403, response.status_code)
+        data = json.loads(response.data.decode('utf-8'))
+        assert_payload_field_type_value(self, data, 'message', str, 'forbidden')
+        assert_payload_field_type_value(self, data, 'success', bool, False)
+        assert_payload_field_type_value(self, data, 'error', int, 403)

@@ -33,41 +33,41 @@ class ErrorsTest(unittest.TestCase):
         assert_payload_field_type_value(self, data, 'success', bool, False)
 
     def test_401_error_no_auth_header(self):
-        try:
-            self.client.get('/auth-required', headers={})
-        except AuthError as e:
-            self.assertRaises(AuthError)
-            assert_payload_field_type_value(self, e.error, 'code', str, 'authorization_header_missing')
-            assert_payload_field_type_value(self, e.error, 'description', str, 'Authorization header is expected.')
+        response = self.client.get('/auth-required', headers={})
+        self.assertEqual(response.status_code, 401)
+
+        data = json.loads(response.data.decode('utf-8'))
+        assert_payload_field_type_value(self, data, 'message', str, 'unauthorized')
+        assert_payload_field_type_value(self, data, 'success', bool, False)
 
     def test_401_error_empty_auth_header(self):
-        try:
-            self.client.get('/auth-required', headers={'Authorization': '.'})
-        except AuthError as e:
-            self.assertRaises(AuthError)
-            assert_payload_field_type_value(self, e.error, 'code', str, 'invalid_header')
-            assert_payload_field_type_value(self, e.error, 'description', str, 'Authorization header must start with "Bearer".')
+        response = self.client.get('/auth-required', headers={'Authorization': '.'})
+        self.assertEqual(response.status_code, 401)
+
+        data = json.loads(response.data.decode('utf-8'))
+        assert_payload_field_type_value(self, data, 'message', str, 'unauthorized')
+        assert_payload_field_type_value(self, data, 'success', bool, False)
 
     def test_401_error_empty_auth_bearer(self):
-        try:
-            self.client.get('/auth-required', headers={'Authorization': 'Bearer'})
-        except AuthError as e:
-            self.assertRaises(AuthError)
-            assert_payload_field_type_value(self, e.error, 'code', str, 'invalid_header')
-            assert_payload_field_type_value(self, e.error, 'description', str, 'Token not found.')
+        response = self.client.get('/auth-required', headers={'Authorization': 'Bearer'})
+        self.assertEqual(response.status_code, 401)
+
+        data = json.loads(response.data.decode('utf-8'))
+        assert_payload_field_type_value(self, data, 'message', str, 'unauthorized')
+        assert_payload_field_type_value(self, data, 'success', bool, False)
 
     def test_401_error_bad_auth_bearer(self):
-        try:
-            self.client.get('/auth-required', headers={'Authorization': 'Bearer foo'})
-        except AuthError as e:
-            self.assertRaises(AuthError)
-            assert_payload_field_type_value(self, e.error, 'code', str, 'invalid_header')
-            assert_payload_field_type_value(self, e.error, 'description', str, 'Authorization header must be bearer token.')
+        response = self.client.get('/auth-required', headers={'Authorization': 'Bearer foo'})
+        self.assertEqual(response.status_code, 401)
+
+        data = json.loads(response.data.decode('utf-8'))
+        assert_payload_field_type_value(self, data, 'message', str, 'unauthorized')
+        assert_payload_field_type_value(self, data, 'success', bool, False)
 
     def test_401_error_auth_bearer_too_big(self):
-        try:
-            self.client.get('/auth-required', headers={'Authorization': 'Bearer foo baz'})
-        except AuthError as e:
-            self.assertRaises(AuthError)
-            assert_payload_field_type_value(self, e.error, 'code', str, 'invalid_header')
-            assert_payload_field_type_value(self, e.error, 'description', str, 'Authorization header must be bearer token.')
+        response = self.client.get('/auth-required', headers={'Authorization': 'Bearer foo baz'})
+        self.assertEqual(response.status_code, 401)
+
+        data = json.loads(response.data.decode('utf-8'))
+        assert_payload_field_type_value(self, data, 'message', str, 'unauthorized')
+        assert_payload_field_type_value(self, data, 'success', bool, False)

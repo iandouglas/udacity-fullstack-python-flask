@@ -76,17 +76,6 @@ def create_app(config_name='default'):
             "message": "internal server error"
         }), 500
 
-    @app.errorhandler(422)
-    def unprocessable(error):
-        """
-        Example error handling for unprocessable entity
-        """
-        return jsonify({
-            "success": False,
-            "error": 422,
-            "message": "unprocessable"
-        }), 422
-
     @app.errorhandler(404)
     def not_found(error):
         """

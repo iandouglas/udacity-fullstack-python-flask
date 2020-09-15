@@ -1,6 +1,5 @@
 from flask_script import Manager
 from api import create_app, db
-from api.database.models import setup_db
 from tests import db_drop_everything
 
 app = create_app()
