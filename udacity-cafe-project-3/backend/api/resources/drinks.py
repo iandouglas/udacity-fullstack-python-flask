@@ -20,9 +20,28 @@ class DrinksResource(Resource):
         ).all()
 
         return {
-            'success': True,
-            'drinks': [drink.short() for drink in drinks]
-        }, 200
+                   'success': True,
+                   'drinks': [drink.short() for drink in drinks]
+               }, 200
+
+    def _validate_drink(self, data):
+        proceed = True
+        if 'title' not in data or 'recipe' not in data:
+            proceed = False
+        if proceed and 'recipe' in data and data['recipe'].__class__ == list:
+            for recipe in data['recipe']:
+                proceed = self._validate_recipe(recipe)
+                if not proceed:
+                    break
+        if proceed and 'recipe' in data and data['recipe'].__class__ == dict:
+            proceed = self._validate_recipe(data['recipe'])
+        return proceed
+
+    def _validate_recipe(self, recipe):
+        proceed = True
+        if 'name' not in recipe or 'color' not in recipe or 'parts' not in recipe:
+            proceed = False
+        return proceed
 
     def post(self, *args, **kwargs):
         """
@@ -51,16 +70,23 @@ class DrinksResource(Resource):
         }
         """
         data = json.loads(request.data)
+        if not self._validate_drink(data):
+            return {
+                       'success': False,
+                       'error': 'details missing',
+                       "message": 'your drink content is missing required data'
+                   }, 400
+
         if 'title' in data and 'recipe' in data and \
-            (data['recipe'].__class__ == list or data['recipe'].__class__ == dict):
+                (data['recipe'].__class__ == list or data['recipe'].__class__ == dict):
             if data['recipe'].__class__ == dict:
                 data['recipe'] = [data['recipe']]
             drink = Drink(data['title'], data['recipe'])
             drink.insert()
             return {
-                'success': True,
-                'drinks': [drink.long()]
-            }, 200
+                       'success': True,
+                       'drinks': [drink.long()]
+                   }, 201
 
 
 class DrinkResource(Resource):
@@ -77,9 +103,9 @@ class DrinkResource(Resource):
 
         question.delete()
         return {
-            'success': True,
-            'delete': drink_id
-        }, 200
+                   'success': True,
+                   'delete': drink_id
+               }, 204
 
 
 class DrinksDetailResource(Resource):
@@ -93,6 +119,6 @@ class DrinksDetailResource(Resource):
         ).all()
 
         return {
-            'success': True,
-            'drinks': [drink.long() for drink in drinks]
-        }, 200
+                   'success': True,
+                   'drinks': [drink.long() for drink in drinks]
+               }, 200

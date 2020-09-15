@@ -1,5 +1,6 @@
 import json
 import unittest
+from copy import deepcopy
 from unittest.mock import patch
 
 from api import db, create_app
@@ -89,7 +90,7 @@ class ManagerUserTest(PostDrinksTest):
             'permissions': ['delete:drinks', 'get:drinks-detail', 'patch:drinks', 'post:drinks']
         }
 
-        payload = self.payload
+        payload = deepcopy(self.payload)
         payload['recipe'] = payload['recipe'][0]
 
         response = self.client.post('/drinks', json=payload, content_type='application/json')
@@ -175,7 +176,7 @@ class ManagerUserTest(PostDrinksTest):
         self.payload['recipe'].pop()
 
         # missing entire recipe
-        payload = self.payload
+        payload = deepcopy(self.payload)
         del(payload['recipe'])
 
         response = self.client.post('/drinks', json=payload, content_type='application/json')
@@ -186,7 +187,7 @@ class ManagerUserTest(PostDrinksTest):
         assert_payload_field_type_value(self, data, 'message', str, 'your drink content is missing required data')
 
         # missing recipe name
-        payload = self.payload
+        payload = deepcopy(self.payload)
         del(payload['recipe'][0]['name'])
 
         response = self.client.post('/drinks', json=payload, content_type='application/json')
@@ -197,7 +198,7 @@ class ManagerUserTest(PostDrinksTest):
         assert_payload_field_type_value(self, data, 'message', str, 'your drink content is missing required data')
 
         # missing recipe color
-        payload = self.payload
+        payload = deepcopy(self.payload)
         del(payload['recipe'][0]['color'])
 
         response = self.client.post('/drinks', json=payload, content_type='application/json')
@@ -208,7 +209,7 @@ class ManagerUserTest(PostDrinksTest):
         assert_payload_field_type_value(self, data, 'message', str, 'your drink content is missing required data')
 
         # missing recipe parts
-        payload = self.payload
+        payload = deepcopy(self.payload)
         del(payload['recipe'][0]['parts'])
 
         response = self.client.post('/drinks', json=payload, content_type='application/json')

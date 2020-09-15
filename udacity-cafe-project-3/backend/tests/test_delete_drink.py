@@ -99,10 +99,8 @@ class ManagerUserTest(DeleteDrinksTest):
 
         response = self.client.delete(f'/drinks/{self.drink_id}')
 
-        self.assertEqual(200, response.status_code)
-        data = json.loads(response.data.decode('utf-8'))
-        assert_payload_field_type_value(self, data, 'success', bool, True)
-        assert_payload_field_type_value(self, data, 'delete', str, str(self.drink_id))
+        self.assertEqual(204, response.status_code)
+        self.assertEqual('', response.data.decode('utf-8'))
 
     @patch('api.auth.auth.verify_decode_jwt')
     @patch('api.auth.auth.get_token_auth_header')
