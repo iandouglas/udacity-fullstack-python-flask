@@ -7,7 +7,7 @@ from api.database.models import Drink
 from tests import db_drop_everything, seed_data, assert_payload_field_type_value, assert_payload_field_type
 
 drink_id = None
-
+BAD_DRINK_ID = 89745
 
 class DeleteDrinksTest(unittest.TestCase):
     def setUp(self):
@@ -45,16 +45,16 @@ class GuestUserTest(DeleteDrinksTest):
             self.assertEqual(401, response.status_code)
             data = json.loads(response.data.decode('utf-8'))
             assert_payload_field_type_value(self, data, 'error', int, 401)
-            assert_payload_field_type_value(self, data, 'message', str, 'resource not found')
+            assert_payload_field_type_value(self, data, 'message', str, 'unauthorized')
             assert_payload_field_type_value(self, data, 'success', bool, False)
 
     def test_endpoint_delete_drink_bad_id(self):
-        response = self.client.delete(f'/drinks/0981230981908')
+        response = self.client.delete(f'/drinks/{BAD_DRINK_ID}')
 
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(401, response.status_code)
         data = json.loads(response.data.decode('utf-8'))
-        assert_payload_field_type_value(self, data, 'error', int, 404)
-        assert_payload_field_type_value(self, data, 'message', str, 'resource not found')
+        assert_payload_field_type_value(self, data, 'error', int, 401)
+        assert_payload_field_type_value(self, data, 'message', str, 'unauthorized')
         assert_payload_field_type_value(self, data, 'success', bool, False)
 
 
@@ -70,10 +70,10 @@ class BaristaUserTest(DeleteDrinksTest):
         if drink_id is not None:
             response = self.client.delete(f'/drinks/{drink_id}')
 
-            self.assertEqual(401, response.status_code)
+            self.assertEqual(403, response.status_code)
             data = json.loads(response.data.decode('utf-8'))
-            assert_payload_field_type_value(self, data, 'error', int, 401)
-            assert_payload_field_type_value(self, data, 'message', str, 'resource not found')
+            assert_payload_field_type_value(self, data, 'error', int, 403)
+            assert_payload_field_type_value(self, data, 'message', str, 'forbidden')
             assert_payload_field_type_value(self, data, 'success', bool, False)
 
     @patch('api.auth.auth.verify_decode_jwt')
@@ -82,12 +82,12 @@ class BaristaUserTest(DeleteDrinksTest):
         mock_get_token_auth_header.return_value = 'barista-token'
         mock_verify_decode_jwt.return_value = {'permissions': ['get:drinks-detail']}
 
-        response = self.client.delete(f'/drinks/0981230981908')
+        response = self.client.delete(f'/drinks/{BAD_DRINK_ID}')
 
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(403, response.status_code)
         data = json.loads(response.data.decode('utf-8'))
-        assert_payload_field_type_value(self, data, 'error', int, 404)
-        assert_payload_field_type_value(self, data, 'message', str, 'resource not found')
+        assert_payload_field_type_value(self, data, 'error', int, 403)
+        assert_payload_field_type_value(self, data, 'message', str, 'forbidden')
         assert_payload_field_type_value(self, data, 'success', bool, False)
 
 
@@ -103,9 +103,9 @@ class ManagerUserTest(DeleteDrinksTest):
         if drink_id is not None:
             response = self.client.delete(f'/drinks/{drink_id}')
 
-            self.assertEqual(204, response.status_code)
+            self.assertEqual(200, response.status_code)
             data = json.loads(response.data.decode('utf-8'))
-            self.assertEqual({}, data)
+            assert_payload_field_type_value(self, data, 'success', bool, True)
 
     @patch('api.auth.auth.verify_decode_jwt')
     @patch('api.auth.auth.get_token_auth_header')
@@ -113,12 +113,12 @@ class ManagerUserTest(DeleteDrinksTest):
         mock_get_token_auth_header.return_value = 'manager-token'
         mock_verify_decode_jwt.return_value = {'permissions': ['delete:drinks', 'get:drinks-detail', 'patch:drinks', 'post:drinks']}
 
-        response = self.client.delete(f'/drinks/0981230981908')
+        response = self.client.delete(f'/drinks/{BAD_DRINK_ID}')
 
-        self.assertEqual(404, response.status_code)
+        self.assertEqual(422, response.status_code)
         data = json.loads(response.data.decode('utf-8'))
-        assert_payload_field_type_value(self, data, 'error', int, 404)
-        assert_payload_field_type_value(self, data, 'message', str, 'resource not found')
+        assert_payload_field_type_value(self, data, 'error', int, 422)
+        assert_payload_field_type_value(self, data, 'message', str, 'unprocessable')
         assert_payload_field_type_value(self, data, 'success', bool, False)
 
 

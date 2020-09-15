@@ -49,12 +49,12 @@ class Drink(db.Model):
     # the required datatype is [{'color':string, 'name':string, 'parts':number}]
     recipe = Column(String(180), nullable=False)
 
-    def __init__(self, title, recipe_list, id=None):
+    def __init__(self, title, recipe_list, drink_id=None):
         self.title = title
         recipe_json = json.dumps(recipe_list)
         self.recipe = recipe_json
-        if id is not None:
-            self.id = id
+        if drink_id is not None:
+            self.id = drink_id
 
     def short(self):
         """

@@ -18,8 +18,8 @@ class AuthError(Exception):
     AuthError Exception
     A standardized way to communicate auth failure modes
     """
-    def __init__(self, error, status_code):
-        self.error = error
+    def __init__(self, error_details, status_code):
+        self.error = error_details
         self.status_code = status_code
 
 
@@ -132,9 +132,9 @@ def verify_decode_jwt(token):   # pragma: no cover
             }, 400)
 
     raise AuthError({
-                'code': 'invalid_header',
-                'description': 'Unable to find the appropriate key.'
-            }, 400)
+        'code': 'invalid_header',
+        'description': 'Unable to find the appropriate key.'
+    }, 400)
 
 
 def requires_auth(permission=''):
@@ -155,7 +155,7 @@ def requires_auth(permission=''):
                 payload = verify_decode_jwt(token)
                 check_permissions(permission, payload)
             except AuthError as e:
-                abort(e.error['error'])
+                abort(e.status_code)
             except:
                 abort(401)
             return f(payload, *args, **kwargs)
