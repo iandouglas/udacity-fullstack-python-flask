@@ -42,7 +42,13 @@ From within the `./src` directory first ensure you are working using your create
 To run the server, execute:
 
 ```bash
-FLASK_APP=api.py flask run --reload
+# build and seed the database
+DATABASE_URL=postgres://localhost/cafe_dev python manage.py db_seed
+
+# run Flask
+export FLASK_APP=api
+export FLASK_DEBUG=true
+flask run --reload
 ```
 
 ## Running tests
@@ -51,6 +57,7 @@ FLASK_APP=api.py flask run --reload
 export FLASK_APP=api
 export FLASK_DEBUG=true
 export DATABASE_URL=postgres://localhost:5432/cafe_test
+
 rm -rf .coverage coverage_html_report/ .pytest_cache/
 coverage erase
 coverage run -m pytest && coverage html && open coverage_html_report/index.html
