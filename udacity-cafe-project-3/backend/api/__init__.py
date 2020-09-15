@@ -34,6 +34,7 @@ class ExtendedAPI(Api):
 
         # catch other werkzeug http errors
         if isinstance(err, HTTPException):
+            original = getattr(err, "original_exception", None)
             return jsonify({
                 'success': False,
                 'error': err.code,
@@ -42,6 +43,7 @@ class ExtendedAPI(Api):
 
         # if 'message' attribute isn't set, assume it's a core Python exception
         if not getattr(err, 'message', None):
+            original = getattr(err, "original_exception", None)
             return jsonify({
                 'message': 'Server has encountered an unknown error'
                 }), 500
@@ -119,8 +121,9 @@ def create_app(config_name='default'):
         }), 200
 
     # putting flask-restful resource imports here to avoid circular dependencies
-    from api.resources.drinks import DrinksResource, DrinkResource
+    from api.resources.drinks import DrinksResource, DrinkResource, DrinksDetailResource
 
+    api.add_resource(DrinksDetailResource, '/drinks-detail')
     api.add_resource(DrinkResource, '/drinks/<drink_id>')
     api.add_resource(DrinksResource, '/drinks')
 

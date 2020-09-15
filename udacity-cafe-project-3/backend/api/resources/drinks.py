@@ -15,7 +15,7 @@ class DrinksResource(Resource):
         return {
             'success': True,
             'drinks': [drink.short() for drink in drinks]
-        }
+        }, 200
 
 
 class DrinkResource(Resource):
@@ -34,4 +34,20 @@ class DrinkResource(Resource):
         return {
             'success': True,
             'delete': drink_id
+        }, 200
+
+
+class DrinksDetailResource(Resource):
+    method_decorators = {
+        'get': [requires_auth('get:drinks-detail')]
+    }
+
+    def get(self, *args, **kwargs):
+        drinks = Drink.query.order_by(
+            Drink.title
+        ).all()
+
+        return {
+            'success': True,
+            'drinks': [drink.long() for drink in drinks]
         }, 200

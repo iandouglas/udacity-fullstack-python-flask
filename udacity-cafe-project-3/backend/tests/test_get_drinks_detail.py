@@ -96,7 +96,7 @@ class BaristaUserTest(GetAllDrinksDetailTest):
         assert_payload_field_type_value(self, next_drink, 'id', int, self.drink_2.id)
         assert_payload_field_type_value(self, next_drink, 'title', str, self.drink_2.title)
         assert_payload_field_type(self, next_drink, 'recipe', list)
-        self.assertEqual(2, len(next_drink.recipe))
+        self.assertEqual(2, len(next_drink['recipe']))
 
         next_recipe = next_drink['recipe'][0]
         self.assertIsInstance(next_recipe, dict)
@@ -140,7 +140,7 @@ class ManagerUserTest(GetAllDrinksDetailTest):
         assert_payload_field_type_value(self, next_drink, 'id', int, self.drink_2.id)
         assert_payload_field_type_value(self, next_drink, 'title', str, self.drink_2.title)
         assert_payload_field_type(self, next_drink, 'recipe', list)
-        self.assertEqual(2, len(next_drink.recipe))
+        self.assertEqual(2, len(next_drink['recipe']))
 
         next_recipe = next_drink['recipe'][0]
         self.assertIsInstance(next_recipe, dict)
