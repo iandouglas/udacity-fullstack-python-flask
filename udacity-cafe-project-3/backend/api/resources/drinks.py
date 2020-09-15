@@ -1,3 +1,6 @@
+import json
+
+from flask import request, jsonify
 from flask_restful import Resource, abort
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -22,7 +25,42 @@ class DrinksResource(Resource):
         }, 200
 
     def post(self, *args, **kwargs):
-        pass
+        """
+        allow for one or more ingredients
+        (postman only ever sends one, we should allow for more than one)
+        {
+            "title": "Water3",
+            "recipe": {
+                "name": "Water",
+                "color": "blue",
+                "parts": 1
+            }
+        }
+
+        {
+            "title": "Water3",
+            "recipe": [{
+                "name": "Water",
+                "color": "blue",
+                "parts": 1
+            },{
+                "name": "Water",
+                "color": "blue",
+                "parts": 1
+            }]
+        }
+        """
+        data = json.loads(request.data)
+        if 'title' in data and 'recipe' in data and \
+            (data['recipe'].__class__ == list or data['recipe'].__class__ == dict):
+            if data['recipe'].__class__ == dict:
+                data['recipe'] = [data['recipe']]
+            drink = Drink(data['title'], data['recipe'])
+            drink.insert()
+            return {
+                'success': True,
+                'drinks': [drink.long()]
+            }, 200
 
 
 class DrinkResource(Resource):

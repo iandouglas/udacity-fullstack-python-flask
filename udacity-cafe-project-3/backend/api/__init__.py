@@ -17,7 +17,7 @@ class ExtendedAPI(Api):
     This class overrides 'handle_error' method of 'Api' class in Flask-RESTful,
     to extend global exception handing functionality
     """
-    def handle_error(self, err):
+    def handle_error(self, err):  # pragma: no cover
         """
         prevents writing unnecessary try/except block though out the application
         """

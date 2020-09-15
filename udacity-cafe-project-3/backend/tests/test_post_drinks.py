@@ -82,7 +82,36 @@ class BaristaUserTest(PostDrinksTest):
 class ManagerUserTest(PostDrinksTest):
     @patch('api.auth.auth.verify_decode_jwt')
     @patch('api.auth.auth.get_token_auth_header')
-    def test_endpoint_happypath_create_drink(self, mock_get_token_auth_header, mock_verify_decode_jwt):
+    def test_endpoint_happypath_create_drink_1_ingredient(self, mock_get_token_auth_header, mock_verify_decode_jwt):
+        mock_get_token_auth_header.return_value = 'manager-token'
+        mock_verify_decode_jwt.return_value = {'permissions': ['delete:drinks', 'get:drinks-detail', 'patch:drinks', 'post:drinks']}
+
+        payload = self.payload
+        payload['recipe'] = payload['recipe'][0]
+
+        response = self.client.post('/drinks', json=payload, content_type='application/json')
+        self.assertEqual(200, response.status_code)
+
+        data = json.loads(response.data.decode('utf-8'))
+        assert_payload_field_type_value(self, data, 'success', bool, True)
+        assert_payload_field_type(self, data, 'drinks', list)
+
+        next_drink = data['drinks'][0]
+        assert_payload_field_type(self, next_drink, 'id', int)
+        assert_payload_field_type_value(self, next_drink, 'title', str, self.drink_name)
+        assert_payload_field_type(self, next_drink, 'recipe', list)
+        self.assertEqual(1, len(next_drink['recipe']))
+
+        next_recipe = next_drink['recipe'][0]
+        self.assertIsInstance(next_recipe, dict)
+        assert_payload_field_type_value(self, next_recipe, 'name', str, self.recipe_name_1)
+        assert_payload_field_type_value(self, next_recipe, 'color', str, self.recipe_color_1)
+        assert_payload_field_type_value(self, next_recipe, 'parts', int, self.recipe_parts_1)
+
+
+    @patch('api.auth.auth.verify_decode_jwt')
+    @patch('api.auth.auth.get_token_auth_header')
+    def test_endpoint_happypath_create_drink_2_ingredients(self, mock_get_token_auth_header, mock_verify_decode_jwt):
         mock_get_token_auth_header.return_value = 'manager-token'
         mock_verify_decode_jwt.return_value = {'permissions': ['delete:drinks', 'get:drinks-detail', 'patch:drinks', 'post:drinks']}
 
