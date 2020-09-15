@@ -93,7 +93,7 @@ class ManagerUserTest(PostDrinksTest):
         payload['recipe'] = payload['recipe'][0]
 
         response = self.client.post('/drinks', json=payload, content_type='application/json')
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(201, response.status_code)
 
         data = json.loads(response.data.decode('utf-8'))
         assert_payload_field_type_value(self, data, 'success', bool, True)
@@ -120,7 +120,7 @@ class ManagerUserTest(PostDrinksTest):
         }
 
         response = self.client.post('/drinks', json=self.payload, content_type='application/json')
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(201, response.status_code)
 
         data = json.loads(response.data.decode('utf-8'))
         assert_payload_field_type_value(self, data, 'success', bool, True)
@@ -143,3 +143,78 @@ class ManagerUserTest(PostDrinksTest):
         assert_payload_field_type_value(self, next_recipe, 'name', str, self.recipe_name_2)
         assert_payload_field_type_value(self, next_recipe, 'color', str, self.recipe_color_2)
         assert_payload_field_type_value(self, next_recipe, 'parts', int, self.recipe_parts_2)
+
+    @patch('api.auth.auth.verify_decode_jwt')
+    @patch('api.auth.auth.get_token_auth_header')
+    def test_endpoint_sadpath_create_drink_missing_title(self, mock_get_token_auth_header, mock_verify_decode_jwt):
+        mock_get_token_auth_header.return_value = 'manager-token'
+        mock_verify_decode_jwt.return_value = {
+            'permissions': ['delete:drinks', 'get:drinks-detail', 'patch:drinks', 'post:drinks']
+        }
+
+        payload = self.payload
+        del(payload['title'])
+
+        response = self.client.post('/drinks', json=payload, content_type='application/json')
+        self.assertEqual(400, response.status_code)
+
+        data = json.loads(response.data.decode('utf-8'))
+        assert_payload_field_type_value(self, data, 'success', bool, False)
+        assert_payload_field_type_value(self, data, 'error', str, 'details missing')
+        assert_payload_field_type_value(self, data, 'message', str, 'your drink content is missing required data')
+
+    @patch('api.auth.auth.verify_decode_jwt')
+    @patch('api.auth.auth.get_token_auth_header')
+    def test_endpoint_sadpath_create_drink_missing_recipe_pieces(self, mock_get_token_auth_header,
+                                                                 mock_verify_decode_jwt):
+        mock_get_token_auth_header.return_value = 'manager-token'
+        mock_verify_decode_jwt.return_value = {
+            'permissions': ['delete:drinks', 'get:drinks-detail', 'patch:drinks', 'post:drinks']
+        }
+
+        self.payload['recipe'].pop()
+
+        # missing entire recipe
+        payload = self.payload
+        del(payload['recipe'])
+
+        response = self.client.post('/drinks', json=payload, content_type='application/json')
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.data.decode('utf-8'))
+        assert_payload_field_type_value(self, data, 'success', bool, False)
+        assert_payload_field_type_value(self, data, 'error', str, 'details missing')
+        assert_payload_field_type_value(self, data, 'message', str, 'your drink content is missing required data')
+
+        # missing recipe name
+        payload = self.payload
+        del(payload['recipe'][0]['name'])
+
+        response = self.client.post('/drinks', json=payload, content_type='application/json')
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.data.decode('utf-8'))
+        assert_payload_field_type_value(self, data, 'success', bool, False)
+        assert_payload_field_type_value(self, data, 'error', str, 'details missing')
+        assert_payload_field_type_value(self, data, 'message', str, 'your drink content is missing required data')
+
+        # missing recipe color
+        payload = self.payload
+        del(payload['recipe'][0]['color'])
+
+        response = self.client.post('/drinks', json=payload, content_type='application/json')
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.data.decode('utf-8'))
+        assert_payload_field_type_value(self, data, 'success', bool, False)
+        assert_payload_field_type_value(self, data, 'error', str, 'details missing')
+        assert_payload_field_type_value(self, data, 'message', str, 'your drink content is missing required data')
+
+        # missing recipe parts
+        payload = self.payload
+        del(payload['recipe'][0]['parts'])
+
+        response = self.client.post('/drinks', json=payload, content_type='application/json')
+        self.assertEqual(400, response.status_code)
+        data = json.loads(response.data.decode('utf-8'))
+        assert_payload_field_type_value(self, data, 'success', bool, False)
+        assert_payload_field_type_value(self, data, 'error', str, 'details missing')
+        assert_payload_field_type_value(self, data, 'message', str, 'your drink content is missing required data')
+
