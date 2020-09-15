@@ -23,6 +23,7 @@ class GetAllDrinksTest(unittest.TestCase):
         self.app_context.pop()
 
 
+# noinspection DuplicatedCode
 class GuestUserTest(GetAllDrinksTest):
     def test_endpoint_drinks_happypath_with_drinks(self):
         drink = Drink(
@@ -46,6 +47,7 @@ class GuestUserTest(GetAllDrinksTest):
         assert_payload_field_type(self, first_drink, 'id', int)
         assert_payload_field_type_value(self, first_drink, 'title', str, 'blue water')
         assert_payload_field_type(self, first_drink, 'recipe', list)
+
         first_recipe = first_drink['recipe'][0]
         self.assertIsInstance(first_recipe, dict)
         assert_payload_field_type_value(self, first_recipe, 'color', str, 'blue')
@@ -60,6 +62,7 @@ class GuestUserTest(GetAllDrinksTest):
         assert_payload_field_type_value(self, data, 'drinks', list, [])
 
 
+# noinspection DuplicatedCode
 class BaristaUserTest(GetAllDrinksTest):
     @patch('api.auth.auth.verify_decode_jwt')
     @patch('api.auth.auth.get_token_auth_header')
@@ -87,6 +90,7 @@ class BaristaUserTest(GetAllDrinksTest):
         assert_payload_field_type(self, first_drink, 'id', int)
         assert_payload_field_type_value(self, first_drink, 'title', str, 'blue water')
         assert_payload_field_type(self, first_drink, 'recipe', list)
+
         first_recipe = first_drink['recipe'][0]
         self.assertIsInstance(first_recipe, dict)
         assert_payload_field_type_value(self, first_recipe, 'color', str, 'blue')
@@ -96,7 +100,9 @@ class BaristaUserTest(GetAllDrinksTest):
     @patch('api.auth.auth.get_token_auth_header')
     def test_endpoint_drinks_happypath_with_no_drinks(self, mock_get_token_auth_header, mock_verify_decode_jwt):
         mock_get_token_auth_header.return_value = 'manager-token'
-        mock_verify_decode_jwt.return_value = {'permissions': ['delete:drinks', 'get:drinks-detail', 'patch:drinks', 'post:drinks']}
+        mock_verify_decode_jwt.return_value = {
+            'permissions': ['delete:drinks', 'get:drinks-detail', 'patch:drinks', 'post:drinks']
+        }
 
         response = self.client.get('/drinks')
         data = json.loads(response.data.decode('utf-8'))
@@ -106,12 +112,15 @@ class BaristaUserTest(GetAllDrinksTest):
         assert_payload_field_type_value(self, data, 'drinks', list, [])
 
 
+# noinspection DuplicatedCode
 class ManagerUserTest(GetAllDrinksTest):
     @patch('api.auth.auth.verify_decode_jwt')
     @patch('api.auth.auth.get_token_auth_header')
     def test_endpoint_drinks_happypath_with_drinks(self, mock_get_token_auth_header, mock_verify_decode_jwt):
         mock_get_token_auth_header.return_value = 'manager-token'
-        mock_verify_decode_jwt.return_value = {'permissions': ['delete:drinks', 'get:drinks-detail', 'patch:drinks', 'post:drinks']}
+        mock_verify_decode_jwt.return_value = {
+            'permissions': ['delete:drinks', 'get:drinks-detail', 'patch:drinks', 'post:drinks']
+        }
 
         drink = Drink(
             'blue water',
@@ -134,6 +143,7 @@ class ManagerUserTest(GetAllDrinksTest):
         assert_payload_field_type(self, first_drink, 'id', int)
         assert_payload_field_type_value(self, first_drink, 'title', str, 'blue water')
         assert_payload_field_type(self, first_drink, 'recipe', list)
+
         first_recipe = first_drink['recipe'][0]
         self.assertIsInstance(first_recipe, dict)
         assert_payload_field_type_value(self, first_recipe, 'color', str, 'blue')

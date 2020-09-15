@@ -14,6 +14,7 @@ returns status code 200 and json {"success": True, "drinks": drinks} where drink
     or appropriate status code indicating reason for failure
 '''
 
+
 class GetAllDrinksDetailTest(unittest.TestCase):
     def setUp(self):
         self.app = create_app('testing')
@@ -67,6 +68,7 @@ class GuestUserTest(GetAllDrinksDetailTest):
         assert_payload_field_type_value(self, data, 'success', bool, False)
 
 
+# noinspection DuplicatedCode
 class BaristaUserTest(GetAllDrinksDetailTest):
     @patch('api.auth.auth.verify_decode_jwt')
     @patch('api.auth.auth.get_token_auth_header')
@@ -111,12 +113,15 @@ class BaristaUserTest(GetAllDrinksDetailTest):
         assert_payload_field_type_value(self, next_recipe, 'parts', int, 2)
 
 
+# noinspection DuplicatedCode
 class ManagerUserTest(GetAllDrinksDetailTest):
     @patch('api.auth.auth.verify_decode_jwt')
     @patch('api.auth.auth.get_token_auth_header')
     def test_endpoint_drinks_happypath_with_drinks(self, mock_get_token_auth_header, mock_verify_decode_jwt):
         mock_get_token_auth_header.return_value = 'manager-token'
-        mock_verify_decode_jwt.return_value = {'permissions': ['delete:drinks', 'get:drinks-detail', 'patch:drinks', 'post:drinks']}
+        mock_verify_decode_jwt.return_value = {
+            'permissions': ['delete:drinks', 'get:drinks-detail', 'patch:drinks', 'post:drinks']
+        }
 
         response = self.client.get('/drinks-detail')
         self.assertEqual(200, response.status_code)

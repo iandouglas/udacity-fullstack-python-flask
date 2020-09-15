@@ -1,7 +1,6 @@
 import json
 import unittest
 from unittest.mock import patch
-from api.auth.auth import AuthError
 from tests import db_drop_everything, seed_data, assert_payload_field_type_value
 from api import create_app, db
 
@@ -25,7 +24,8 @@ class AppTest(unittest.TestCase):
 
         assert_payload_field_type_value(self, response.headers, 'Access-Control-Allow-Origin', str, '*')
         assert_payload_field_type_value(self, response.headers, 'Access-Control-Allow-Headers', str, 'Content-Type')
-        assert_payload_field_type_value(self, response.headers, 'Access-Control-Allow-Methods', str, 'GET, PATCH, POST, DELETE, OPTIONS')
+        assert_payload_field_type_value(self, response.headers, 'Access-Control-Allow-Methods', str,
+                                        'GET, PATCH, POST, DELETE, OPTIONS')
 
     @patch('api.auth.auth.check_permissions')
     @patch('api.auth.auth.verify_decode_jwt')

@@ -1,10 +1,7 @@
 import json
 import unittest
 
-from flask import Response
-
 from api import create_app, db
-from api.auth.auth import AuthError
 from tests import db_drop_everything, seed_data, assert_payload_field_type_value
 
 
