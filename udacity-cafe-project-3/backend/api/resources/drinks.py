@@ -7,6 +7,10 @@ from api.database.models import Drink
 
 
 class DrinksResource(Resource):
+    method_decorators = {
+        'post': [requires_auth('post:drinks')]
+    }
+
     def get(self):
         drinks = Drink.query.order_by(
             Drink.title
@@ -16,6 +20,9 @@ class DrinksResource(Resource):
             'success': True,
             'drinks': [drink.short() for drink in drinks]
         }, 200
+
+    def post(self, *args, **kwargs):
+        pass
 
 
 class DrinkResource(Resource):

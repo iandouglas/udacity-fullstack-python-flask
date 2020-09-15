@@ -71,11 +71,11 @@ class BaristaUserTest(PostDrinksTest):
         mock_verify_decode_jwt.return_value = {'permissions': ['get:drinks-detail']}
 
         response = self.client.post('/drinks', json=self.payload, content_type='application/json')
-        self.assertEqual(401, response.status_code)
+        self.assertEqual(403, response.status_code)
 
         data = json.loads(response.data.decode('utf-8'))
-        assert_payload_field_type_value(self, data, 'error', int, 401)
-        assert_payload_field_type_value(self, data, 'message', str, 'unauthorized')
+        assert_payload_field_type_value(self, data, 'error', int, 403)
+        assert_payload_field_type_value(self, data, 'message', str, 'forbidden')
         assert_payload_field_type_value(self, data, 'success', bool, False)
 
 
