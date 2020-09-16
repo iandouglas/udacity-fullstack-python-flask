@@ -2,6 +2,7 @@ import json
 
 from flask import request, jsonify
 from flask_restful import Resource, abort
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 
 from api import requires_auth, db
@@ -92,7 +93,10 @@ class DrinksResource(Resource):
             if data['recipe'].__class__ == dict:
                 data['recipe'] = [data['recipe']]
             drink = Drink(data['title'], data['recipe'])
-            drink.insert()
+            try:
+                drink.insert()
+            except IntegrityError:
+                abort(422)
             return {
                 'success': True,
                 'drinks': [drink.long()]

@@ -219,3 +219,18 @@ class ManagerUserTest(PostDrinksTest):
         assert_payload_field_type_value(self, data, 'error', str, 'details missing')
         assert_payload_field_type_value(self, data, 'message', str, 'your drink content is missing required data')
 
+    @patch('api.auth.auth.verify_decode_jwt')
+    @patch('api.auth.auth.get_token_auth_header')
+    def test_endpoint_sadpath_create_title_exists(self, mock_get_token_auth_header, mock_verify_decode_jwt):
+        mock_get_token_auth_header.return_value = 'manager-token'
+        mock_verify_decode_jwt.return_value = {
+            'permissions': ['delete:drinks', 'get:drinks-detail', 'patch:drinks', 'post:drinks']
+        }
+
+        payload = deepcopy(self.payload)
+        payload['recipe'] = payload['recipe'][0]
+        response = self.client.post('/drinks', json=payload, content_type='application/json')
+        self.assertEqual(201, response.status_code)
+
+        response = self.client.post('/drinks', json=payload, content_type='application/json')
+        self.assertEqual(422, response.status_code)

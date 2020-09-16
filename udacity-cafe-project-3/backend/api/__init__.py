@@ -21,7 +21,7 @@ class ExtendedAPI(Api):
         """
         prevents writing unnecessary try/except block though out the application
         """
-        print(err, err.__class__)  # log every exception raised in the application
+        print('API handle_error()', err, err.__class__)  # log every exception raised in the application
 
         # catch our custom AuthError
         if isinstance(err, AuthError):

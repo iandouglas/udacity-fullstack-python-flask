@@ -28,7 +28,6 @@ def db_seed():
             "color": "blue",
             "parts": 1
         }],
-        drink_id=1
     )
     drink_1.insert()
 
@@ -43,7 +42,6 @@ def db_seed():
             "color": "yellow",
             "parts": 2
         }],
-        drink_id=2
     )
     drink_2.insert()
     db.session.commit()
