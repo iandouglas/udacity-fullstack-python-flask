@@ -172,12 +172,28 @@ class ManagerUserTest(PatchDrinkTest):
         del(payload['title'])
 
         response = self.client.patch('/drinks/1', json=payload, content_type='application/json')
-        self.assertEqual(400, response.status_code)
+        self.assertEqual(200, response.status_code)
 
         data = json.loads(response.data.decode('utf-8'))
-        assert_payload_field_type_value(self, data, 'success', bool, False)
-        assert_payload_field_type_value(self, data, 'error', str, 'details missing')
-        assert_payload_field_type_value(self, data, 'message', str, 'your drink content is missing required data')
+        assert_payload_field_type_value(self, data, 'success', bool, True)
+        assert_payload_field_type(self, data, 'drinks', list)
+
+        next_drink = data['drinks'][0]
+        assert_payload_field_type_value(self, next_drink, 'title', str, self.original_drink.title)
+        assert_payload_field_type(self, next_drink, 'recipe', list)
+        self.assertEqual(2, len(next_drink['recipe']))
+
+        next_recipe = next_drink['recipe'][0]
+        self.assertIsInstance(next_recipe, dict)
+        assert_payload_field_type_value(self, next_recipe, 'name', str, self.recipe_name_1)
+        assert_payload_field_type_value(self, next_recipe, 'color', str, self.recipe_color_1)
+        assert_payload_field_type_value(self, next_recipe, 'parts', int, self.recipe_parts_1)
+
+        next_recipe = next_drink['recipe'][1]
+        self.assertIsInstance(next_recipe, dict)
+        assert_payload_field_type_value(self, next_recipe, 'name', str, self.recipe_name_2)
+        assert_payload_field_type_value(self, next_recipe, 'color', str, self.recipe_color_2)
+        assert_payload_field_type_value(self, next_recipe, 'parts', int, self.recipe_parts_2)
 
     @patch('api.auth.auth.verify_decode_jwt')
     @patch('api.auth.auth.get_token_auth_header')
@@ -223,3 +239,19 @@ class ManagerUserTest(PatchDrinkTest):
         assert_payload_field_type_value(self, data, 'error', str, 'details missing')
         assert_payload_field_type_value(self, data, 'message', str, 'your drink content is missing required data')
 
+    @patch('api.auth.auth.verify_decode_jwt')
+    @patch('api.auth.auth.get_token_auth_header')
+    def test_endpoint_sadpath_change_drink_bad_id(self, mock_get_token_auth_header, mock_verify_decode_jwt):
+        mock_get_token_auth_header.return_value = 'manager-token'
+        mock_verify_decode_jwt.return_value = {
+            'permissions': ['delete:drinks', 'get:drinks-detail', 'patch:drinks', 'post:drinks']
+        }
+
+        payload = deepcopy(self.payload)
+
+        response = self.client.patch('/drinks/987234', json=payload, content_type='application/json')
+        self.assertEqual(404, response.status_code)
+        data = json.loads(response.data.decode('utf-8'))
+        assert_payload_field_type_value(self, data, 'error', int, 404)
+        assert_payload_field_type_value(self, data, 'message', str, 'resource not found')
+        assert_payload_field_type_value(self, data, 'success', bool, False)
