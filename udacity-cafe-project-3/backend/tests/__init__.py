@@ -45,4 +45,3 @@ def db_drop_everything(db):   # pragma: no cover
 
 def seed_data(db):
     db.session.commit()
-

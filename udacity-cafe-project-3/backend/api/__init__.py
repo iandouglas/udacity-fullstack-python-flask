@@ -2,8 +2,8 @@ from flask_cors import CORS
 from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.exceptions import HTTPException, InternalServerError
-from werkzeug.http import HTTP_STATUS_CODES
-from api.auth.auth import get_token_auth_header, verify_decode_jwt, requires_auth, AuthError
+from api.auth.auth import get_token_auth_header, verify_decode_jwt, \
+    requires_auth, AuthError
 from flask import Flask, jsonify
 from config import config
 
@@ -19,9 +19,10 @@ class ExtendedAPI(Api):
     """
     def handle_error(self, err):  # pragma: no cover
         """
-        prevents writing unnecessary try/except block though out the application
+        prevents writing unnecessary try/except block thoughout the application
         """
-        print('API handle_error()', err, err.__class__)  # log every exception raised in the application
+        # log every exception raised in the application
+        print('API handle_error()', err, err.__class__)
 
         # catch our custom AuthError
         if isinstance(err, AuthError):
@@ -62,7 +63,8 @@ def create_app(config_name='default'):
     @app.after_request
     def after_request(response):
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
-        response.headers.add('Access-Control-Allow-Methods', 'GET, PATCH, POST, DELETE, OPTIONS')
+        response.headers.add('Access-Control-Allow-Methods',
+                             'GET, PATCH, POST, DELETE, OPTIONS')
         return response
 
     @app.errorhandler(InternalServerError)
@@ -120,8 +122,10 @@ def create_app(config_name='default'):
             "message": "authorized"
         }), 200
 
-    # putting flask-restful resource imports here to avoid circular dependencies
-    from api.resources.drinks import DrinksResource, DrinkResource, DrinksDetailResource
+    # putting flask-restful resource imports here to avoid circular
+    # dependencies
+    from api.resources.drinks import DrinksResource, DrinkResource, \
+        DrinksDetailResource
 
     api.add_resource(DrinksDetailResource, '/drinks-detail')
     api.add_resource(DrinkResource, '/drinks/<drink_id>')

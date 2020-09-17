@@ -17,6 +17,7 @@ def db_setup():
     db_drop_everything(db)
     db.create_all()
 
+
 @manager.command
 def db_seed():
     db_drop_everything(db)

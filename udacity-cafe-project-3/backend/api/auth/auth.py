@@ -9,7 +9,9 @@ ALGORITHMS = ['RS256']
 API_AUDIENCE = 'fsnd-cafe'
 AUTH0_CLIENT_ID = 'OkMASXWuwnKmgx1Sf7slHHTNaMLG3yy1'
 REDIRECT_URL = 'http://localhost:5000/headers'
-AUTH0_AUTHORIZE_URL = f'https://{AUTH0_DOMAIN}/authorize?audience={API_AUDIENCE}&response_type=token&client_id={AUTH0_CLIENT_ID}&redirect_uri={REDIRECT_URL}'
+AUTH0_AUTHORIZE_URL = f'https://{AUTH0_DOMAIN}/authorize?audience=' \
+                      f'{API_AUDIENCE}&response_type=token&client_id=' \
+                      f'{AUTH0_CLIENT_ID}&redirect_uri={REDIRECT_URL}'
 
 
 # AuthError Exception
@@ -62,7 +64,8 @@ def check_permissions(permission, payload):
     """
     it should raise an AuthError if permissions are not included in the payload
         !!NOTE check your RBAC settings in Auth0
-    it should raise an AuthError if the requested permission string is not in the payload permissions array
+    it should raise an AuthError if the requested permission string is not in
+        the payload permissions array
     return true otherwise
 
     @INPUTS
@@ -122,7 +125,8 @@ def verify_decode_jwt(token):   # pragma: no cover
         except jwt.JWTClaimsError:
             raise AuthError({
                 'code': 'invalid_claims',
-                'description': 'Incorrect claims. Please, check the audience and issuer.'
+                'description': 'Incorrect claims. Please, check the audience '
+                               'and issuer.'
             }, 401)
 
         except Exception:
@@ -141,8 +145,10 @@ def requires_auth(permission=''):
     """
     it should use the get_token_auth_header method to get the token
     it should use the verify_decode_jwt method to decode the jwt
-    it should use the check_permissions method validate claims and check the requested permission
-    return the decorator which passes the decoded payload to the decorated method
+    it should use the check_permissions method validate claims and check the
+    requested permission
+    return the decorator which passes the decoded payload to the decorated
+    method
 
     @INPUTS
         permission: string permission (i.e. 'post:drink')
@@ -156,7 +162,7 @@ def requires_auth(permission=''):
                 check_permissions(permission, payload)
             except AuthError as e:
                 abort(e.status_code)
-            except:
+            except Exception:
                 abort(401)
             return f(payload, *args, **kwargs)
 

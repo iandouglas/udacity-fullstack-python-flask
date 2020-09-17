@@ -54,7 +54,6 @@ class DrinksResource(Resource):
             'drinks': [drink.short() for drink in drinks]
         }, 200
 
-
     def post(self, *args, **kwargs):
         """
         allow for one or more ingredients
@@ -89,7 +88,8 @@ class DrinksResource(Resource):
                 "message": 'your drink content is missing required data'
             }, 400
 
-        if data['recipe'].__class__ == list or data['recipe'].__class__ == dict:
+        if data['recipe'].__class__ == list or \
+                data['recipe'].__class__ == dict:
             if data['recipe'].__class__ == dict:
                 data['recipe'] = [data['recipe']]
             drink = Drink(data['title'], data['recipe'])
